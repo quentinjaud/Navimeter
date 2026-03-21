@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { prisma } from "@/lib/db";
 import FileUpload from "@/components/Upload/FileUpload";
 import TraceList from "@/components/TraceList/TraceList";
