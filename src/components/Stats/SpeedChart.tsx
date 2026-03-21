@@ -10,39 +10,43 @@ import {
   CartesianGrid,
 } from "recharts";
 import { format } from "date-fns";
+import { COULEURS } from "@/lib/theme";
 
-interface SpeedChartProps {
+interface PropsGraphiqueVitesse {
   points: {
     timestamp: string | null;
     speedKn: number | null;
   }[];
 }
 
-function downsample<T>(data: T[], maxPoints: number): T[] {
-  if (data.length <= maxPoints) return data;
-  const step = data.length / maxPoints;
-  const result: T[] = [];
-  for (let i = 0; i < maxPoints; i++) {
-    result.push(data[Math.round(i * step)]);
+/** Réduit le nombre de points pour le rendu du graphique */
+function sousechantillonner<T>(donnees: T[], pointsMax: number): T[] {
+  if (donnees.length <= pointsMax) return donnees;
+  const pas = donnees.length / pointsMax;
+  const resultat: T[] = [];
+  for (let i = 0; i < pointsMax; i++) {
+    resultat.push(donnees[Math.round(i * pas)]);
   }
-  if (result[result.length - 1] !== data[data.length - 1]) {
-    result.push(data[data.length - 1]);
+  // Toujours inclure le dernier point
+  const dernierIndex = donnees.length - 1;
+  if (Math.round((pointsMax - 1) * pas) !== dernierIndex) {
+    resultat.push(donnees[dernierIndex]);
   }
-  return result;
+  return resultat;
 }
 
-export default function SpeedChart({ points }: SpeedChartProps) {
-  const chartData = downsample(
+export default function SpeedChart({ points }: PropsGraphiqueVitesse) {
+  const donneesGraphique = sousechantillonner(
     points
       .filter((p) => p.timestamp && p.speedKn !== null)
       .map((p) => ({
-        time: p.timestamp!,
-        speed: p.speedKn!,
+        heure: p.timestamp!,
+        vitesse: p.speedKn!,
       })),
     500
   );
 
-  if (chartData.length < 2) {
+  if (donneesGraphique.length < 2) {
     return (
       <div className="chart-empty">
         Pas assez de données pour afficher le graphique
@@ -54,17 +58,17 @@ export default function SpeedChart({ points }: SpeedChartProps) {
     <div className="chart-container">
       <h3 className="chart-title">Vitesse dans le temps</h3>
       <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e9e9e7" />
+        <LineChart data={donneesGraphique}>
+          <CartesianGrid strokeDasharray="3 3" stroke={COULEURS.grille} />
           <XAxis
-            dataKey="time"
+            dataKey="heure"
             tickFormatter={(t) => format(new Date(t), "HH:mm")}
             tick={{ fontSize: 11 }}
-            stroke="#787774"
+            stroke={COULEURS.texteSecondaire}
           />
           <YAxis
             tick={{ fontSize: 11 }}
-            stroke="#787774"
+            stroke={COULEURS.texteSecondaire}
             label={{
               value: "kn",
               angle: -90,
@@ -76,16 +80,16 @@ export default function SpeedChart({ points }: SpeedChartProps) {
             labelFormatter={(t) => format(new Date(t as string), "HH:mm:ss")}
             formatter={(value) => [`${Number(value).toFixed(1)} kn`, "Vitesse"]}
             contentStyle={{
-              backgroundColor: "#FFFDF9",
-              border: "1px solid #e9e9e7",
+              backgroundColor: COULEURS.fond,
+              border: `1px solid ${COULEURS.bordure}`,
               borderRadius: 8,
               fontSize: 12,
             }}
           />
           <Line
             type="monotone"
-            dataKey="speed"
-            stroke="#43728B"
+            dataKey="vitesse"
+            stroke={COULEURS.accent}
             dot={false}
             strokeWidth={1.5}
           />

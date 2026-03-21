@@ -1,52 +1,47 @@
-import type { ParsedPoint, TraceStats } from "../types";
-import { haversineNm, totalDistanceNm } from "./distance";
-import { speedKn } from "./speed";
+import type { PointAnalyse, StatistiquesTrace } from "../types";
+import { distanceTotaleNm } from "./distance";
 
-export function computeStats(points: ParsedPoint[]): TraceStats {
+/**
+ * Calcule les statistiques d'une trace à partir de ses points.
+ *
+ * Conventions d'arrondi :
+ * - Distance : 2 décimales (précision ~18m, suffisant pour la navigation)
+ * - Vitesses : 1 décimale (standard nautique, précision au dixième de nœud)
+ */
+export function calculerStats(points: PointAnalyse[]): StatistiquesTrace {
   if (points.length < 2) {
     return { distanceNm: 0, durationSeconds: 0, avgSpeedKn: 0, maxSpeedKn: 0 };
   }
 
-  const distanceNm = totalDistanceNm(points);
+  const distanceNm = distanceTotaleNm(points);
 
-  const timestamps = points
+  // Durée entre le premier et le dernier horodatage disponible
+  const horodatages = points
     .map((p) => p.timestamp)
     .filter((t): t is Date => t !== null);
 
-  let durationSeconds = 0;
-  if (timestamps.length >= 2) {
-    const first = timestamps[0].getTime();
-    const last = timestamps[timestamps.length - 1].getTime();
-    durationSeconds = Math.round((last - first) / 1000);
+  let dureeSecondes = 0;
+  if (horodatages.length >= 2) {
+    const premier = horodatages[0].getTime();
+    const dernier = horodatages[horodatages.length - 1].getTime();
+    dureeSecondes = Math.round((dernier - premier) / 1000);
   }
 
-  let maxSpeedKn = 0;
-  for (let i = 1; i < points.length; i++) {
-    const segSpeed = points[i].speedKn;
-    if (segSpeed !== null && segSpeed > maxSpeedKn) {
-      maxSpeedKn = segSpeed;
-    } else if (segSpeed === null && points[i].timestamp && points[i - 1].timestamp) {
-      const dist = haversineNm(
-        points[i - 1].lat,
-        points[i - 1].lon,
-        points[i].lat,
-        points[i].lon
-      );
-      const dt =
-        (points[i].timestamp!.getTime() - points[i - 1].timestamp!.getTime()) /
-        1000;
-      const s = speedKn(dist, dt);
-      if (s > maxSpeedKn) maxSpeedKn = s;
+  // Vitesse max : calculée par enrichirPoints() lors du parsing
+  let vitesseMaxKn = 0;
+  for (const point of points) {
+    if (point.speedKn !== null && point.speedKn > vitesseMaxKn) {
+      vitesseMaxKn = point.speedKn;
     }
   }
 
-  const avgSpeedKn =
-    durationSeconds > 0 ? (distanceNm / durationSeconds) * 3600 : 0;
+  const vitesseMoyKn =
+    dureeSecondes > 0 ? (distanceNm / dureeSecondes) * 3600 : 0;
 
   return {
     distanceNm: Math.round(distanceNm * 100) / 100,
-    durationSeconds,
-    avgSpeedKn: Math.round(avgSpeedKn * 10) / 10,
-    maxSpeedKn: Math.round(maxSpeedKn * 10) / 10,
+    durationSeconds: dureeSecondes,
+    avgSpeedKn: Math.round(vitesseMoyKn * 10) / 10,
+    maxSpeedKn: Math.round(vitesseMaxKn * 10) / 10,
   };
 }

@@ -14,6 +14,7 @@ model Trace {
   format          String
   source          String       @default("unknown")
   createdAt       DateTime     @default(now())
+  startedAt       DateTime?
   distanceNm      Float?
   durationSeconds Int?
   avgSpeedKn      Float?

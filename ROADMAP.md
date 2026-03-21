@@ -59,13 +59,13 @@ User
 
 ## Phase 0 — Refactoring & Montée de versions (v0.1.1)
 
-- [ ] Migration Next.js 15 → 16 (codemod automatique + adaptations manuelles)
-- [ ] Migration Prisma 6 → 7 (ESM-only, driver adapters, prisma.config.ts — tester en branche isolée)
+- [x] Migration Next.js 15 → 16 (codemod automatique + adaptations manuelles)
+- [x] Migration Prisma 6 → 7 (ESM-only, driver adapters, prisma.config.ts)
 - [ ] Migration Leaflet → **MapLibre GL JS** (rendu WebGL, gratuit — `react-map-gl/maplibre`)
   - OpenSeaMap en overlay raster sur fond vectoriel MapLibre
   - SSR : même pattern `dynamic()` + `ssr: false`
 - [ ] Intégrer les algos de gpx.studio (MIT) : smoothing, Ramer-Douglas-Peucker, stats cumulatives
-- [ ] Refactoring code existant
+- [x] Refactoring code existant (francisation, dédoublonnage, service d'import, logger, thème centralisé, validations)
 - [ ] Build + deploy Railway validés
 
 **Risques :** Prisma 7 ESM-only peut casser des dépendances. Auth.js v5 peer deps incompatibles Next 16 (overrides ou Better Auth).

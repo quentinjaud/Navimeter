@@ -1,17 +1,21 @@
 export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
+import { journalErreur } from "@/lib/journal";
 import FileUpload from "@/components/Upload/FileUpload";
 import TraceList from "@/components/TraceList/TraceList";
-import type { TraceSummary } from "@/lib/types";
+import type { ResumeTrace } from "@/lib/types";
 
 export default async function HomePage() {
-  let traces: TraceSummary[] = [];
-  let dbError = false;
+  let traces: ResumeTrace[] = [];
+  let erreurBD = false;
 
   try {
-    const results = await prisma.trace.findMany({
-      orderBy: { createdAt: "desc" },
+    const resultats = await prisma.trace.findMany({
+      orderBy: [
+        { startedAt: { sort: "desc", nulls: "last" } },
+        { createdAt: "desc" },
+      ],
       select: {
         id: true,
         name: true,
@@ -19,23 +23,26 @@ export default async function HomePage() {
         format: true,
         source: true,
         createdAt: true,
+        startedAt: true,
         distanceNm: true,
         durationSeconds: true,
         avgSpeedKn: true,
         maxSpeedKn: true,
       },
     });
-    traces = results.map((t) => ({
+    traces = resultats.map((t) => ({
       ...t,
       createdAt: t.createdAt.toISOString(),
+      startedAt: t.startedAt?.toISOString() ?? null,
     }));
-  } catch {
-    dbError = true;
+  } catch (erreur) {
+    journalErreur("HomePage", erreur);
+    erreurBD = true;
   }
 
   return (
     <div className="page-container">
-      {dbError && (
+      {erreurBD && (
         <div className="error-banner">
           Impossible de se connecter à la base de données. Vérifiez votre
           connexion réseau et la variable DATABASE_URL.

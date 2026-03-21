@@ -14,7 +14,7 @@ import L from "leaflet";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
-interface Point {
+interface PointCarte {
   lat: number;
   lon: number;
   timestamp: string | null;
@@ -23,69 +23,80 @@ interface Point {
   pointIndex: number;
 }
 
-interface TraceMapProps {
-  points: Point[];
+interface PropsCarteTrace {
+  points: PointCarte[];
   maxSpeed: number;
 }
 
-function speedToColor(speed: number, maxSpeed: number): string {
-  if (maxSpeed <= 0) return "hsl(240, 100%, 50%)";
-  const ratio = Math.min(speed / maxSpeed, 1);
-  const hue = 240 - ratio * 240;
-  return `hsl(${hue}, 100%, 50%)`;
+/** Convertit une vitesse en couleur (bleu=lent → rouge=rapide) */
+function vitesseVersCouleur(vitesse: number, vitesseMax: number): string {
+  if (vitesseMax <= 0) return "hsl(240, 100%, 50%)";
+  const ratio = Math.min(vitesse / vitesseMax, 1);
+  const teinte = 240 - ratio * 240;
+  return `hsl(${teinte}, 100%, 50%)`;
 }
 
-function FitBounds({ bounds }: { bounds: LatLngBounds }) {
-  const map = useMap();
+/** Ajuste la vue de la carte pour afficher tous les points */
+function FitBounds({ limites }: { limites: LatLngBounds }) {
+  const carte = useMap();
   useEffect(() => {
-    map.fitBounds(bounds, { padding: [20, 20] });
-  }, [map, bounds]);
+    carte.fitBounds(limites, { padding: [20, 20] });
+  }, [carte, limites]);
   return null;
 }
 
-export default function TraceMap({ points, maxSpeed }: TraceMapProps) {
-  const bounds = useMemo(() => {
-    const lats = points.map((p) => p.lat);
-    const lons = points.map((p) => p.lon);
+export default function TraceMap({ points, maxSpeed }: PropsCarteTrace) {
+  // Guard : pas de points → message au lieu d'un crash
+  if (points.length === 0) {
+    return (
+      <div className="map-loading">
+        <p className="map-loading-text">Aucun point à afficher</p>
+      </div>
+    );
+  }
+
+  const limites = useMemo(() => {
+    const latitudes = points.map((p) => p.lat);
+    const longitudes = points.map((p) => p.lon);
     return L.latLngBounds(
-      [Math.min(...lats), Math.min(...lons)],
-      [Math.max(...lats), Math.max(...lons)]
+      [Math.min(...latitudes), Math.min(...longitudes)],
+      [Math.max(...latitudes), Math.max(...longitudes)]
     );
   }, [points]);
 
   const segments = useMemo(() => {
-    const segs: {
+    const resultat: {
       positions: [number, number][];
-      color: string;
-      speed: number;
-      heading: number | null;
-      time: string | null;
+      couleur: string;
+      vitesse: number;
+      cap: number | null;
+      heure: string | null;
       index: number;
     }[] = [];
 
     for (let i = 1; i < points.length; i++) {
-      const prev = points[i - 1];
-      const curr = points[i];
-      const speed = curr.speedKn ?? 0;
+      const precedent = points[i - 1];
+      const courant = points[i];
+      const vitesse = courant.speedKn ?? 0;
 
-      segs.push({
+      resultat.push({
         positions: [
-          [prev.lat, prev.lon],
-          [curr.lat, curr.lon],
+          [precedent.lat, precedent.lon],
+          [courant.lat, courant.lon],
         ],
-        color: speedToColor(speed, maxSpeed),
-        speed,
-        heading: curr.headingDeg,
-        time: curr.timestamp,
+        couleur: vitesseVersCouleur(vitesse, maxSpeed),
+        vitesse,
+        cap: courant.headingDeg,
+        heure: courant.timestamp,
         index: i,
       });
     }
-    return segs;
+    return resultat;
   }, [points, maxSpeed]);
 
   return (
     <MapContainer
-      center={[bounds.getCenter().lat, bounds.getCenter().lng]}
+      center={[limites.getCenter().lat, limites.getCenter().lng]}
       zoom={13}
       preferCanvas={true}
       className="map-wrapper"
@@ -111,28 +122,28 @@ export default function TraceMap({ points, maxSpeed }: TraceMapProps) {
         </LayersControl.Overlay>
       </LayersControl>
 
-      <FitBounds bounds={bounds} />
+      <FitBounds limites={limites} />
 
       {segments.map((seg) => (
         <Polyline
           key={seg.index}
           positions={seg.positions}
-          pathOptions={{ color: seg.color, weight: 3, opacity: 0.9 }}
+          pathOptions={{ color: seg.couleur, weight: 3, opacity: 0.9 }}
         >
           <Popup>
             <div className="map-popup">
-              {seg.time && (
+              {seg.heure && (
                 <p>
                   <strong>Heure :</strong>{" "}
-                  {format(new Date(seg.time), "HH:mm:ss", { locale: fr })}
+                  {format(new Date(seg.heure), "HH:mm:ss", { locale: fr })}
                 </p>
               )}
               <p>
-                <strong>Vitesse :</strong> {seg.speed.toFixed(1)} kn
+                <strong>Vitesse :</strong> {seg.vitesse.toFixed(1)} kn
               </p>
-              {seg.heading !== null && (
+              {seg.cap !== null && (
                 <p>
-                  <strong>Cap :</strong> {seg.heading}°
+                  <strong>Cap :</strong> {seg.cap}°
                 </p>
               )}
               <p className="map-popup-coords">

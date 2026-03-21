@@ -6,8 +6,8 @@ App d'analyse de traces de navigation à voile.
 
 ## Stack
 
-- Next.js 15 + React 19 + TypeScript + Mantine + CSS vanilla
-- Prisma 6 + PostgreSQL (Railway)
+- Next.js 16 + React 19 + TypeScript + Mantine + CSS vanilla
+- Prisma 7 + PostgreSQL (Railway)
 - Leaflet + OpenStreetMap + OpenSeaMap (tuiles nautiques)
 - Recharts (graphiques vitesse/temps)
 
@@ -22,20 +22,27 @@ src/
 ├── components/
 │   ├── Map/                # TraceMap (Leaflet) + TraceMapWrapper (ssr:false)
 │   ├── Stats/              # StatsPanel + SpeedChart
-│   ├── Upload/             # FileUpload (drag & drop)
+│   ├── Upload/             # FileUpload (drag & drop, validation taille)
 │   └── TraceList/          # Liste des traces importées
 └── lib/
-    ├── parsers/            # GPX et KML → ParsedTrace
-    ├── geo/                # Calculs : distance, heading, speed, stats
-    ├── types.ts            # Types partagés
+    ├── parsers/            # GPX et KML → TraceAnalysee
+    │   └── commun.ts       # Logique partagée (enrichirPoints, extrairePointsGeoJson)
+    ├── geo/                # Calculs : distance, cap, vitesse, stats
+    │   └── math.ts         # Fonctions mathématiques partagées (enRadians, enDegres)
+    ├── services/           # Logique métier (import-trace.ts)
+    ├── types.ts            # Types partagés (PointAnalyse, TraceAnalysee, etc.)
+    ├── theme.ts            # Constantes de couleurs (COULEURS)
+    ├── utilitaires.ts      # Fonctions utilitaires (formaterDuree)
+    ├── journal.ts          # Logger minimal (journalErreur, journalAvertissement)
     └── db.ts               # Singleton Prisma
 ```
 
 ## Conventions
 
 - **Langue** : tout en français (UI, code, commits, logs GitHub)
+- **Nommage code** : français sans accents (ex: `formaterDuree`, `detecterSource`, `PointAnalyse`)
 - **Unités nautiques** : nœuds (kn), milles nautiques (NM), degrés (°)
-- **Charte graphique** : jaune #F6BC00, bleu #43728B, gris chauds, fond crème #FFFDF9 (alignée sur Origami-voilier)
+- **Charte graphique** : jaune #F6BC00, bleu #43728B, gris chauds, fond crème #FFFDF9 — constantes centralisées dans `src/lib/theme.ts`
 - **Police** : Atkinson Hyperlegible Next
 - **Carte** : Leaflet côté client uniquement (ssr: false via TraceMapWrapper)
 - **Desktop-first** : l'analyse de traces se fait sur desktop, le responsive est secondaire
@@ -62,6 +69,7 @@ npm run db:studio    # Prisma Studio (port 5555)
 - Leaflet ne supporte pas le SSR → toujours wrapper avec `dynamic()` + `ssr: false`
 - Les coordonnées sont stockées en WGS84 (lat/lon décimaux)
 - Les points sont ordonnés par `pointIndex` (pas par timestamp, qui peut être null)
+- Validation taille fichier : 50 Mo max (client + serveur)
 
 ## Roadmap
 

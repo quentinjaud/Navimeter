@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { journalErreur } from "@/lib/journal";
 
 export async function GET(
-  _request: NextRequest,
+  _requete: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
@@ -24,7 +25,7 @@ export async function GET(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  _requete: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
@@ -32,7 +33,8 @@ export async function DELETE(
   try {
     await prisma.trace.delete({ where: { id } });
     return new NextResponse(null, { status: 204 });
-  } catch {
+  } catch (erreur) {
+    journalErreur("DELETE /api/traces/[id]", erreur);
     return NextResponse.json({ error: "Trace non trouvée" }, { status: 404 });
   }
 }

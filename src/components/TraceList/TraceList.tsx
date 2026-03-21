@@ -4,20 +4,14 @@ import { useRouter } from "next/navigation";
 import { Trash2, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import type { TraceSummary } from "@/lib/types";
+import type { ResumeTrace } from "@/lib/types";
+import { formaterDuree } from "@/lib/utilitaires";
 
-interface TraceListProps {
-  traces: TraceSummary[];
+interface PropsListeTraces {
+  traces: ResumeTrace[];
 }
 
-function formatDuration(seconds: number): string {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  if (h > 0) return `${h}h${m.toString().padStart(2, "0")}`;
-  return `${m}min`;
-}
-
-export default function TraceList({ traces }: TraceListProps) {
+export default function TraceList({ traces }: PropsListeTraces) {
   const router = useRouter();
 
   if (traces.length === 0) {
@@ -32,7 +26,7 @@ export default function TraceList({ traces }: TraceListProps) {
     );
   }
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
+  const gererSuppression = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!confirm("Supprimer cette trace ?")) return;
 
@@ -52,15 +46,19 @@ export default function TraceList({ traces }: TraceListProps) {
             <h3 className="trace-list-item-name">{trace.name}</h3>
             <div className="trace-list-item-meta">
               <span>
-                {format(new Date(trace.createdAt), "d MMM yyyy", {
-                  locale: fr,
-                })}
+                {trace.startedAt
+                  ? format(new Date(trace.startedAt), "d MMM yyyy 'à' HH'h'mm", {
+                      locale: fr,
+                    })
+                  : format(new Date(trace.createdAt), "d MMM yyyy", {
+                      locale: fr,
+                    })}
               </span>
               {trace.distanceNm && (
                 <span>{trace.distanceNm.toFixed(1)} NM</span>
               )}
               {trace.durationSeconds && (
-                <span>{formatDuration(trace.durationSeconds)}</span>
+                <span>{formaterDuree(trace.durationSeconds)}</span>
               )}
               {trace.avgSpeedKn && (
                 <span>{trace.avgSpeedKn.toFixed(1)} kn moy.</span>
@@ -70,7 +68,7 @@ export default function TraceList({ traces }: TraceListProps) {
           <div className="trace-list-item-actions">
             <span className="trace-badge">{trace.format}</span>
             <button
-              onClick={(e) => handleDelete(trace.id, e)}
+              onClick={(e) => gererSuppression(trace.id, e)}
               className="trace-list-delete-btn"
               title="Supprimer"
             >
