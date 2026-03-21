@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { obtenirSession } from "@/lib/session";
+import { obtenirSession, obtenirIdUtilisateurEffectif } from "@/lib/session";
 import { journalErreur } from "@/lib/journal";
 
 export async function PUT(
@@ -18,15 +18,16 @@ export async function PUT(
     const { bateauId } = corps;
 
     // Verifier ownership de la trace
+    const userId = await obtenirIdUtilisateurEffectif(session);
     const trace = await prisma.trace.findUnique({ where: { id } });
-    if (!trace || trace.userId !== session.user.id) {
+    if (!trace || trace.userId !== userId) {
       return NextResponse.json({ error: "Trace non trouvee" }, { status: 404 });
     }
 
     // Si un bateau est specifie, verifier qu'il appartient au meme user
     if (bateauId) {
       const bateau = await prisma.bateau.findUnique({ where: { id: bateauId } });
-      if (!bateau || bateau.userId !== session.user.id) {
+      if (!bateau || bateau.userId !== userId) {
         return NextResponse.json({ error: "Bateau non trouve" }, { status: 404 });
       }
     }

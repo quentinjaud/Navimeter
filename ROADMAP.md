@@ -79,7 +79,7 @@ User
 - [x] Association trace → bateau
 - [x] Espace admin : CRUD utilisateurs, transfert de traces, association bateaux
 - [x] Role admin via ADMIN_EMAIL (env var)
-- [ ] Admin : impersonation d'utilisateurs (voir l'app comme un autre user)
+- [x] Admin : impersonation d'utilisateurs (voir l'app comme un autre user)
 
 ## Phase 2 — Bibliothèque de traces & Nettoyage (v0.3)
 

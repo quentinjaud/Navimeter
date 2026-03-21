@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { MantineWrapper } from "@/components/MantineProvider";
 import { MenuUtilisateur } from "@/components/MenuUtilisateur";
+import { BandeauImpersonation } from "@/components/BandeauImpersonation";
 import { Footer } from "@/components/Footer";
 import { ColorSchemeScript, mantineHtmlProps } from "@mantine/core";
 import "./globals.css";
@@ -30,6 +31,7 @@ export default function RootLayout({
       </head>
       <body>
         <MantineWrapper>
+          <BandeauImpersonation />
           <header className="app-header">
             <a href="/" className="app-header-title">
               Navimeter

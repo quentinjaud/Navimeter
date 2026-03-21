@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
 import { journalErreur } from "@/lib/journal";
 
 type ResultatSession =
@@ -68,4 +68,31 @@ export async function exigerAdmin() {
     throw new Error("Acces reserve aux administrateurs");
   }
   return session;
+}
+
+/**
+ * Retourne l'ID de l'utilisateur effectif (impersonne si admin + cookie present).
+ * Utiliser dans les pages et API qui filtrent par userId.
+ */
+export async function obtenirIdUtilisateurEffectif(
+  session: { user: { id: string; role?: string } }
+): Promise<string> {
+  if (!estAdmin(session)) {
+    return session.user.id;
+  }
+
+  try {
+    const jar = await cookies();
+    const cookie = jar.get("navimeter-impersonate");
+    if (cookie?.value) {
+      const idCible = cookie.value.split(":")[0];
+      if (idCible && idCible !== session.user.id) {
+        return idCible;
+      }
+    }
+  } catch {
+    // cookies() peut echouer dans certains contextes
+  }
+
+  return session.user.id;
 }

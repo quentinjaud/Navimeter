@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
-import { obtenirSession } from "@/lib/session";
+import { obtenirSession, obtenirIdUtilisateurEffectif } from "@/lib/session";
 import { journalErreur } from "@/lib/journal";
 import FileUpload from "@/components/Upload/FileUpload";
 import TraceList from "@/components/TraceList/TraceList";
@@ -15,10 +15,11 @@ export default async function PageTraces() {
   let erreurBD = false;
 
   if (session) {
+    const userId = await obtenirIdUtilisateurEffectif(session);
     try {
       const [resultatsTraces, resultatsBateaux] = await Promise.all([
         prisma.trace.findMany({
-          where: { userId: session.user.id },
+          where: { userId },
           orderBy: [
             { startedAt: { sort: "desc", nulls: "last" } },
             { createdAt: "desc" },
@@ -42,7 +43,7 @@ export default async function PageTraces() {
           },
         }),
         prisma.bateau.findMany({
-          where: { userId: session.user.id },
+          where: { userId },
           orderBy: { nom: "asc" },
         }),
       ]);

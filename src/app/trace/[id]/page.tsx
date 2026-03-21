@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { obtenirSession, estAdmin } from "@/lib/session";
+import { obtenirSession, estAdmin, obtenirIdUtilisateurEffectif } from "@/lib/session";
 import TraceMapWrapper from "@/components/Map/TraceMapWrapper";
 import StatsPanel from "@/components/Stats/StatsPanel";
 import SpeedChart from "@/components/Stats/SpeedChart";
@@ -28,13 +28,13 @@ export default async function TraceDetailPage({ params }: PropsPage) {
 
   if (!trace) notFound();
 
-  // Verifier ownership (ou admin) — si pas de session (erreur DB), on bloque
+  // Verifier ownership avec l'ID effectif (impersonation prise en compte)
   if (session) {
-    if (trace.userId !== session.user.id && !estAdmin(session)) {
+    const userId = await obtenirIdUtilisateurEffectif(session);
+    if (trace.userId !== userId && !estAdmin(session)) {
       notFound();
     }
   } else {
-    // Pas de session disponible — le proxy a laisse passer mais on ne peut pas verifier ownership
     notFound();
   }
 

@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
-import { obtenirSession } from "@/lib/session";
+import { obtenirSession, obtenirIdUtilisateurEffectif } from "@/lib/session";
 import { journalErreur } from "@/lib/journal";
 import ListeBateaux from "@/components/Bateau/ListeBateaux";
 import type { ResumeBateau } from "@/lib/types";
@@ -13,9 +13,10 @@ export default async function PageBateaux() {
   let erreurBD = false;
 
   if (session) {
+    const userId = await obtenirIdUtilisateurEffectif(session);
     try {
       const resultats = await prisma.bateau.findMany({
-        where: { userId: session.user.id },
+        where: { userId },
         orderBy: { createdAt: "desc" },
       });
       bateaux = resultats.map((b) => ({

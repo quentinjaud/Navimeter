@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { obtenirSession } from "@/lib/session";
+import { obtenirSession, obtenirIdUtilisateurEffectif } from "@/lib/session";
 import { journalErreur } from "@/lib/journal";
 
 export async function GET() {
@@ -9,8 +9,9 @@ export async function GET() {
     return NextResponse.json({ error: "Non authentifie" }, { status: 401 });
   }
 
+  const userId = await obtenirIdUtilisateurEffectif(session);
   const bateaux = await prisma.bateau.findMany({
-    where: { userId: session.user.id },
+    where: { userId },
     orderBy: { createdAt: "desc" },
   });
 
@@ -39,7 +40,7 @@ export async function POST(requete: NextRequest) {
         nom: nom.trim(),
         classe: classe?.trim() || null,
         longueur: longueur ? Number(longueur) : null,
-        userId: session.user.id,
+        userId: await obtenirIdUtilisateurEffectif(session),
       },
     });
 

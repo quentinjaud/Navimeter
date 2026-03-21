@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { importerTrace } from "@/lib/services/import-trace";
-import { obtenirSession } from "@/lib/session";
+import { obtenirSession, obtenirIdUtilisateurEffectif } from "@/lib/session";
 import { journalErreur } from "@/lib/journal";
 
 export async function POST(requete: NextRequest) {
@@ -21,7 +21,8 @@ export async function POST(requete: NextRequest) {
       );
     }
 
-    const trace = await importerTrace(fichier, session.user.id);
+    const userId = await obtenirIdUtilisateurEffectif(session);
+    const trace = await importerTrace(fichier, userId);
     return NextResponse.json(trace, { status: 201 });
   } catch (erreur) {
     journalErreur("POST /api/traces", erreur);
@@ -37,8 +38,9 @@ export async function GET() {
     return NextResponse.json({ error: "Non authentifie" }, { status: 401 });
   }
 
+  const userId = await obtenirIdUtilisateurEffectif(session);
   const traces = await prisma.trace.findMany({
-    where: { userId: session.user.id },
+    where: { userId },
     orderBy: [
       { startedAt: { sort: "desc", nulls: "last" } },
       { createdAt: "desc" },

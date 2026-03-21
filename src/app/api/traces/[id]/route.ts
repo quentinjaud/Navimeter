@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { obtenirSession, estAdmin } from "@/lib/session";
+import { obtenirSession, estAdmin, obtenirIdUtilisateurEffectif } from "@/lib/session";
 import { journalErreur } from "@/lib/journal";
 
 export async function GET(
@@ -27,8 +27,9 @@ export async function GET(
     return NextResponse.json({ error: "Trace non trouvee" }, { status: 404 });
   }
 
-  // Verifier ownership (ou admin)
-  if (trace.userId !== session.user.id && !estAdmin(session)) {
+  // Verifier ownership avec ID effectif (impersonation)
+  const userId = await obtenirIdUtilisateurEffectif(session);
+  if (trace.userId !== userId && !estAdmin(session)) {
     return NextResponse.json({ error: "Acces refuse" }, { status: 403 });
   }
 
@@ -52,7 +53,8 @@ export async function DELETE(
     return NextResponse.json({ error: "Trace non trouvee" }, { status: 404 });
   }
 
-  if (trace.userId !== session.user.id && !estAdmin(session)) {
+  const userId = await obtenirIdUtilisateurEffectif(session);
+  if (trace.userId !== userId && !estAdmin(session)) {
     return NextResponse.json({ error: "Acces refuse" }, { status: 403 });
   }
 

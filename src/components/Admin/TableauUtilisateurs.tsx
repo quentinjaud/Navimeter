@@ -11,6 +11,21 @@ interface Props {
 export default function TableauUtilisateurs({ utilisateurs, utilisateurConnecteId }: Props) {
   const routeur = useRouter();
 
+  async function impersonner(id: string) {
+    const reponse = await fetch("/api/admin/impersonate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: id }),
+    });
+
+    if (reponse.ok) {
+      window.location.href = "/traces";
+    } else {
+      const data = await reponse.json();
+      alert(data.error || "Erreur");
+    }
+  }
+
   async function supprimerUtilisateur(id: string, nom: string) {
     if (
       !confirm(
@@ -64,14 +79,22 @@ export default function TableauUtilisateurs({ utilisateurs, utilisateurConnecteI
             <td>{u._count.traces}</td>
             <td>{u._count.bateaux}</td>
             <td>{new Date(u.createdAt).toLocaleDateString("fr-FR")}</td>
-            <td>
+            <td style={{ display: "flex", gap: 4 }}>
               {u.id !== utilisateurConnecteId && (
-                <button
-                  className="admin-actions-btn danger"
-                  onClick={() => supprimerUtilisateur(u.id, u.name)}
-                >
-                  Supprimer
-                </button>
+                <>
+                  <button
+                    className="admin-actions-btn"
+                    onClick={() => impersonner(u.id)}
+                  >
+                    Voir en tant que
+                  </button>
+                  <button
+                    className="admin-actions-btn danger"
+                    onClick={() => supprimerUtilisateur(u.id, u.name)}
+                  >
+                    Supprimer
+                  </button>
+                </>
               )}
             </td>
           </tr>

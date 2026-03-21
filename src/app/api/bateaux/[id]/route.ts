@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { obtenirSession } from "@/lib/session";
+import { obtenirSession, obtenirIdUtilisateurEffectif } from "@/lib/session";
 import { journalErreur } from "@/lib/journal";
 
 export async function GET(
@@ -15,7 +15,7 @@ export async function GET(
   const { id } = await params;
   const bateau = await prisma.bateau.findUnique({ where: { id } });
 
-  if (!bateau || bateau.userId !== session.user.id) {
+  if (!bateau || bateau.userId !== await obtenirIdUtilisateurEffectif(session)) {
     return NextResponse.json({ error: "Bateau non trouve" }, { status: 404 });
   }
 
@@ -35,7 +35,7 @@ export async function PUT(
     const { id } = await params;
     const bateau = await prisma.bateau.findUnique({ where: { id } });
 
-    if (!bateau || bateau.userId !== session.user.id) {
+    if (!bateau || bateau.userId !== await obtenirIdUtilisateurEffectif(session)) {
       return NextResponse.json({ error: "Bateau non trouve" }, { status: 404 });
     }
 
@@ -80,7 +80,7 @@ export async function DELETE(
   const { id } = await params;
   const bateau = await prisma.bateau.findUnique({ where: { id } });
 
-  if (!bateau || bateau.userId !== session.user.id) {
+  if (!bateau || bateau.userId !== await obtenirIdUtilisateurEffectif(session)) {
     return NextResponse.json({ error: "Bateau non trouve" }, { status: 404 });
   }
 
