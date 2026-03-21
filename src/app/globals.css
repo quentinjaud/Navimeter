@@ -1148,3 +1148,30 @@ body {
   outline: none;
   border-color: var(--accent);
 }
+
+/* =============================================
+   SELECT BATEAU
+   ============================================= */
+
+.select-bateau {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  font-family: inherit;
+  background: white;
+  color: var(--foreground);
+  cursor: pointer;
+  min-width: 120px;
+  transition: border-color 0.15s;
+}
+
+.select-bateau:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.select-bateau:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

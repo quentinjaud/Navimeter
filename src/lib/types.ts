@@ -86,4 +86,6 @@ export interface ResumeTrace {
   durationSeconds: number | null;
   avgSpeedKn: number | null;
   maxSpeedKn: number | null;
+  bateauId: string | null;
+  bateau: { id: string; nom: string } | null;
 }

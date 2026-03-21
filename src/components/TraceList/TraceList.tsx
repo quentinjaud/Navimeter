@@ -4,14 +4,16 @@ import { useRouter } from "next/navigation";
 import { Trash2, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import type { ResumeTrace } from "@/lib/types";
+import type { ResumeTrace, ResumeBateau } from "@/lib/types";
 import { formaterDuree } from "@/lib/utilitaires";
+import SelectBateau from "@/components/SelectBateau";
 
 interface PropsListeTraces {
   traces: ResumeTrace[];
+  bateaux?: ResumeBateau[];
 }
 
-export default function TraceList({ traces }: PropsListeTraces) {
+export default function TraceList({ traces, bateaux = [] }: PropsListeTraces) {
   const router = useRouter();
 
   if (traces.length === 0) {
@@ -66,6 +68,13 @@ export default function TraceList({ traces }: PropsListeTraces) {
             </div>
           </div>
           <div className="trace-list-item-actions">
+            {bateaux.length > 0 && (
+              <SelectBateau
+                traceId={trace.id}
+                bateauId={trace.bateauId}
+                bateaux={bateaux}
+              />
+            )}
             <span className="trace-badge">{trace.format}</span>
             <button
               onClick={(e) => gererSuppression(trace.id, e)}

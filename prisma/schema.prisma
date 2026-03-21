@@ -74,6 +74,7 @@ model Bateau {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  traces    Trace[]
 
   @@index([userId])
 }
@@ -92,9 +93,12 @@ model Trace {
   maxSpeedKn      Float?
   userId          String?
   user            User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bateauId        String?
+  bateau          Bateau?      @relation(fields: [bateauId], references: [id], onDelete: SetNull)
   points          TrackPoint[]
 
   @@index([userId])
+  @@index([bateauId])
 }
 
 model TrackPoint {

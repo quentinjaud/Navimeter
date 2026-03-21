@@ -3,6 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ResumeUtilisateur } from "@/lib/types";
+import SelectBateau from "@/components/SelectBateau";
+
+interface BateauAdmin {
+  id: string;
+  nom: string;
+  userId: string;
+  user: { name: string };
+}
 
 interface TraceAdmin {
   id: string;
@@ -10,18 +18,31 @@ interface TraceAdmin {
   createdAt: string;
   userId: string | null;
   user: { name: string } | null;
+  bateauId: string | null;
+  bateau: { id: string; nom: string } | null;
 }
 
 interface Props {
   traces: TraceAdmin[];
   utilisateurs: ResumeUtilisateur[];
+  bateaux: BateauAdmin[];
 }
 
-export default function TransfertTrace({ traces, utilisateurs }: Props) {
+export default function TransfertTrace({ traces, utilisateurs, bateaux }: Props) {
   const routeur = useRouter();
   const [traceSelectionnee, setTraceSelectionnee] = useState<string | null>(null);
   const [userDestination, setUserDestination] = useState("");
   const [chargement, setChargement] = useState(false);
+
+  // Formater les bateaux pour le SelectBateau avec le nom du proprietaire
+  const bateauxFormates = bateaux.map((b) => ({
+    id: b.id,
+    nom: `${b.nom} (${b.user.name})`,
+    type: null,
+    classe: null,
+    longueur: null,
+    createdAt: "",
+  }));
 
   async function transferer() {
     if (!traceSelectionnee || !userDestination) return;
@@ -58,6 +79,7 @@ export default function TransfertTrace({ traces, utilisateurs }: Props) {
         <tr>
           <th>Nom</th>
           <th>Proprietaire</th>
+          <th>Bateau</th>
           <th>Date</th>
           <th>Actions</th>
         </tr>
@@ -74,6 +96,14 @@ export default function TransfertTrace({ traces, utilisateurs }: Props) {
                   orpheline
                 </span>
               )}
+            </td>
+            <td>
+              <SelectBateau
+                traceId={trace.id}
+                bateauId={trace.bateauId}
+                bateaux={bateauxFormates}
+                apiBase="/api/admin/traces"
+              />
             </td>
             <td>{new Date(trace.createdAt).toLocaleDateString("fr-FR")}</td>
             <td>

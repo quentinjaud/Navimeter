@@ -13,7 +13,7 @@ export default async function PageAdminTraces() {
     redirect("/traces");
   }
 
-  const [traces, utilisateursResultats] = await Promise.all([
+  const [traces, utilisateursResultats, bateauxResultats] = await Promise.all([
     prisma.trace.findMany({
       orderBy: { createdAt: "desc" },
       select: {
@@ -23,6 +23,10 @@ export default async function PageAdminTraces() {
         userId: true,
         user: {
           select: { name: true },
+        },
+        bateauId: true,
+        bateau: {
+          select: { id: true, nom: true },
         },
       },
     }),
@@ -39,6 +43,17 @@ export default async function PageAdminTraces() {
             traces: true,
             bateaux: true,
           },
+        },
+      },
+    }),
+    prisma.bateau.findMany({
+      orderBy: { nom: "asc" },
+      select: {
+        id: true,
+        nom: true,
+        userId: true,
+        user: {
+          select: { name: true },
         },
       },
     }),
@@ -72,6 +87,7 @@ export default async function PageAdminTraces() {
         <TransfertTrace
           traces={tracesSerialises}
           utilisateurs={utilisateurs}
+          bateaux={bateauxResultats}
         />
       </section>
     </div>
