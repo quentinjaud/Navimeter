@@ -1,0 +1,27 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+:root {
+  --background: #FAF8F5;
+  --foreground: #3D3A37;
+  --accent-yellow: #F6BC00;
+  --accent-blue: #43728B;
+  --gray-light: #EDEAE6;
+  --gray-medium: #C8C3BC;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-accent-yellow: var(--accent-yellow);
+  --color-accent-blue: var(--accent-blue);
+  --color-gray-light: var(--gray-light);
+  --color-gray-medium: var(--gray-medium);
+  --font-sans: var(--font-atkinson);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-atkinson), Arial, Helvetica, sans-serif;
+}

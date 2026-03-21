@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Trace {
+  id              String       @id @default(cuid())
+  name            String
+  filename        String
+  format          String
+  source          String       @default("unknown")
+  createdAt       DateTime     @default(now())
+  distanceNm      Float?
+  durationSeconds Int?
+  avgSpeedKn      Float?
+  maxSpeedKn      Float?
+  points          TrackPoint[]
+}
+
+model TrackPoint {
+  id         String   @id @default(cuid())
+  traceId    String
+  trace      Trace    @relation(fields: [traceId], references: [id], onDelete: Cascade)
+  lat        Float
+  lon        Float
+  timestamp  DateTime?
+  speedKn    Float?
+  headingDeg Float?
+  elevationM Float?
+  pointIndex Int
+
+  @@index([traceId])
+}

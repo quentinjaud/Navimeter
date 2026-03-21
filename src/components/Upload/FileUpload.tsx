@@ -1,0 +1,104 @@
+"use client";
+
+import { useCallback, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Upload } from "lucide-react";
+
+export default function FileUpload() {
+  const router = useRouter();
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFile = useCallback(
+    async (file: File) => {
+      setError(null);
+      setIsUploading(true);
+
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await fetch("/api/traces", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Erreur lors de l'import");
+        }
+
+        const trace = await res.json();
+        router.push(`/trace/${trace.id}`);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Erreur inconnue");
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [router]
+  );
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      const file = e.dataTransfer.files[0];
+      if (file) handleFile(file);
+    },
+    [handleFile]
+  );
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) handleFile(file);
+    },
+    [handleFile]
+  );
+
+  return (
+    <div
+      onDragOver={(e) => {
+        e.preventDefault();
+        setIsDragging(true);
+      }}
+      onDragLeave={() => setIsDragging(false)}
+      onDrop={handleDrop}
+      className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${
+        isDragging
+          ? "border-accent-yellow bg-accent-yellow/10"
+          : "border-gray-medium hover:border-accent-blue"
+      }`}
+    >
+      <label className="cursor-pointer flex flex-col items-center gap-3">
+        <Upload
+          className={`w-10 h-10 ${isUploading ? "animate-pulse" : ""} text-accent-blue`}
+        />
+        {isUploading ? (
+          <p className="text-sm">Import en cours...</p>
+        ) : (
+          <>
+            <p className="font-bold">
+              Glissez un fichier GPX ou KML ici
+            </p>
+            <p className="text-sm text-gray-medium">
+              ou cliquez pour sélectionner
+            </p>
+          </>
+        )}
+        <input
+          type="file"
+          accept=".gpx,.kml"
+          onChange={handleChange}
+          className="hidden"
+          disabled={isUploading}
+        />
+      </label>
+      {error && (
+        <p className="mt-3 text-sm text-red-600">{error}</p>
+      )}
+    </div>
+  );
+}
