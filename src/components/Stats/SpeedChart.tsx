@@ -44,29 +44,27 @@ export default function SpeedChart({ points }: SpeedChartProps) {
 
   if (chartData.length < 2) {
     return (
-      <div className="bg-white rounded-lg border border-gray-light p-4 text-center text-gray-medium text-sm">
+      <div className="chart-empty">
         Pas assez de données pour afficher le graphique
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-light p-4">
-      <h3 className="text-sm font-bold mb-3 text-foreground">
-        Vitesse dans le temps
-      </h3>
+    <div className="chart-container">
+      <h3 className="chart-title">Vitesse dans le temps</h3>
       <ResponsiveContainer width="100%" height={200}>
         <LineChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#EDEAE6" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#e9e9e7" />
           <XAxis
             dataKey="time"
             tickFormatter={(t) => format(new Date(t), "HH:mm")}
             tick={{ fontSize: 11 }}
-            stroke="#C8C3BC"
+            stroke="#787774"
           />
           <YAxis
             tick={{ fontSize: 11 }}
-            stroke="#C8C3BC"
+            stroke="#787774"
             label={{
               value: "kn",
               angle: -90,
@@ -78,8 +76,8 @@ export default function SpeedChart({ points }: SpeedChartProps) {
             labelFormatter={(t) => format(new Date(t as string), "HH:mm:ss")}
             formatter={(value) => [`${Number(value).toFixed(1)} kn`, "Vitesse"]}
             contentStyle={{
-              backgroundColor: "#FAF8F5",
-              border: "1px solid #EDEAE6",
+              backgroundColor: "#FFFDF9",
+              border: "1px solid #e9e9e7",
               borderRadius: 8,
               fontSize: 12,
             }}

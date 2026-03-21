@@ -88,7 +88,7 @@ export default function TraceMap({ points, maxSpeed }: TraceMapProps) {
       center={[bounds.getCenter().lat, bounds.getCenter().lng]}
       zoom={13}
       preferCanvas={true}
-      className="h-full w-full rounded-lg"
+      className="map-wrapper"
     >
       <LayersControl position="topright">
         <LayersControl.BaseLayer checked name="OpenStreetMap">
@@ -120,7 +120,7 @@ export default function TraceMap({ points, maxSpeed }: TraceMapProps) {
           pathOptions={{ color: seg.color, weight: 3, opacity: 0.9 }}
         >
           <Popup>
-            <div className="text-sm space-y-1">
+            <div className="map-popup">
               {seg.time && (
                 <p>
                   <strong>Heure :</strong>{" "}
@@ -135,8 +135,9 @@ export default function TraceMap({ points, maxSpeed }: TraceMapProps) {
                   <strong>Cap :</strong> {seg.heading}°
                 </p>
               )}
-              <p className="text-xs text-gray-500">
-                {seg.positions[1][0].toFixed(5)}, {seg.positions[1][1].toFixed(5)}
+              <p className="map-popup-coords">
+                {seg.positions[1][0].toFixed(5)},{" "}
+                {seg.positions[1][1].toFixed(5)}
               </p>
             </div>
           </Popup>

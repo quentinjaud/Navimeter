@@ -34,21 +34,21 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
+    <div className="page-container">
       {dbError && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-700">
+        <div className="error-banner">
           Impossible de se connecter à la base de données. Vérifiez votre
           connexion réseau et la variable DATABASE_URL.
         </div>
       )}
 
       <section>
-        <h2 className="text-lg font-bold mb-3">Importer une trace</h2>
+        <h2 className="section-title">Importer une trace</h2>
         <FileUpload />
       </section>
 
       <section>
-        <h2 className="text-lg font-bold mb-3">Mes traces</h2>
+        <h2 className="section-title">Mes traces</h2>
         <TraceList traces={traces} />
       </section>
     </div>

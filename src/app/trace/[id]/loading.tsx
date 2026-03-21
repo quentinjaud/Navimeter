@@ -1,19 +1,16 @@
 export default function Loading() {
   return (
-    <div className="p-6 space-y-4">
-      <div className="h-8 w-48 bg-gray-light animate-pulse rounded" />
-      <div className="lg:grid lg:grid-cols-5 lg:gap-4">
-        <div className="lg:col-span-3 h-[400px] lg:h-[600px] bg-gray-light animate-pulse rounded-lg" />
-        <div className="lg:col-span-2 space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+    <div className="trace-detail-layout">
+      <div className="skeleton" style={{ height: 32, width: 192 }} />
+      <div className="trace-detail-grid">
+        <div className="skeleton trace-map-container" />
+        <div className="trace-sidebar">
+          <div className="stats-grid">
             {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className="h-24 bg-gray-light animate-pulse rounded-lg"
-              />
+              <div key={i} className="skeleton" style={{ height: 96 }} />
             ))}
           </div>
-          <div className="h-48 bg-gray-light animate-pulse rounded-lg" />
+          <div className="skeleton" style={{ height: 192 }} />
         </div>
       </div>
     </div>

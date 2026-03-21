@@ -66,24 +66,18 @@ export default function FileUpload() {
       }}
       onDragLeave={() => setIsDragging(false)}
       onDrop={handleDrop}
-      className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${
-        isDragging
-          ? "border-accent-yellow bg-accent-yellow/10"
-          : "border-gray-medium hover:border-accent-blue"
-      }`}
+      className={`upload-zone${isDragging ? " dragging" : ""}`}
     >
-      <label className="cursor-pointer flex flex-col items-center gap-3">
-        <Upload
-          className={`w-10 h-10 ${isUploading ? "animate-pulse" : ""} text-accent-blue`}
-        />
+      <label className="upload-label">
+        <Upload className={`upload-icon${isUploading ? " uploading" : ""}`} />
         {isUploading ? (
-          <p className="text-sm">Import en cours...</p>
+          <p className="upload-text-secondary">Import en cours...</p>
         ) : (
           <>
-            <p className="font-bold">
+            <p className="upload-text-primary">
               Glissez un fichier GPX ou KML ici
             </p>
-            <p className="text-sm text-gray-medium">
+            <p className="upload-text-secondary">
               ou cliquez pour sélectionner
             </p>
           </>
@@ -92,13 +86,11 @@ export default function FileUpload() {
           type="file"
           accept=".gpx,.kml"
           onChange={handleChange}
-          className="hidden"
+          style={{ display: "none" }}
           disabled={isUploading}
         />
       </label>
-      {error && (
-        <p className="mt-3 text-sm text-red-600">{error}</p>
-      )}
+      {error && <p className="upload-error">{error}</p>}
     </div>
   );
 }

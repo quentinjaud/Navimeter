@@ -22,10 +22,12 @@ export default function TraceList({ traces }: TraceListProps) {
 
   if (traces.length === 0) {
     return (
-      <div className="text-center text-gray-medium py-8">
-        <FileText className="w-12 h-12 mx-auto mb-3 opacity-40" />
+      <div className="trace-list-empty">
+        <FileText className="trace-list-empty-icon" />
         <p>Aucune trace importée</p>
-        <p className="text-sm">Importez un fichier GPX ou KML pour commencer</p>
+        <p style={{ fontSize: "0.875rem" }}>
+          Importez un fichier GPX ou KML pour commencer
+        </p>
       </div>
     );
   }
@@ -39,16 +41,16 @@ export default function TraceList({ traces }: TraceListProps) {
   };
 
   return (
-    <div className="space-y-2">
+    <div className="trace-list">
       {traces.map((trace) => (
         <div
           key={trace.id}
           onClick={() => router.push(`/trace/${trace.id}`)}
-          className="bg-white rounded-lg border border-gray-light p-4 cursor-pointer hover:border-accent-blue transition-colors flex items-center justify-between gap-4"
+          className="trace-list-item"
         >
-          <div className="flex-1 min-w-0">
-            <h3 className="font-bold truncate">{trace.name}</h3>
-            <div className="flex gap-4 text-sm text-gray-medium mt-1">
+          <div className="trace-list-item-content">
+            <h3 className="trace-list-item-name">{trace.name}</h3>
+            <div className="trace-list-item-meta">
               <span>
                 {format(new Date(trace.createdAt), "d MMM yyyy", {
                   locale: fr,
@@ -65,16 +67,14 @@ export default function TraceList({ traces }: TraceListProps) {
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs uppercase bg-gray-light text-gray-medium px-2 py-1 rounded">
-              {trace.format}
-            </span>
+          <div className="trace-list-item-actions">
+            <span className="trace-badge">{trace.format}</span>
             <button
               onClick={(e) => handleDelete(trace.id, e)}
-              className="p-2 text-gray-medium hover:text-red-500 transition-colors"
+              className="trace-list-delete-btn"
               title="Supprimer"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 style={{ width: 16, height: 16 }} />
             </button>
           </div>
         </div>
