@@ -37,34 +37,27 @@ export default async function TraceDetailPage({ params }: PageProps) {
   }));
 
   return (
-    <div className="p-4 lg:p-6 space-y-4">
-      <div className="flex items-center gap-3">
-        <Link
-          href="/"
-          className="text-accent-blue hover:text-accent-yellow transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
+    <div className="trace-detail-layout">
+      <div className="trace-header">
+        <Link href="/" className="trace-back-link">
+          <ArrowLeft style={{ width: 20, height: 20 }} />
         </Link>
-        <h1 className="text-xl font-bold">{trace.name}</h1>
-        <span className="text-xs uppercase bg-gray-light text-gray-medium px-2 py-1 rounded">
-          {trace.format}
-        </span>
+        <h1 className="trace-title">{trace.name}</h1>
+        <span className="trace-badge">{trace.format}</span>
         {trace.source !== "unknown" && (
-          <span className="text-xs bg-accent-blue/10 text-accent-blue px-2 py-1 rounded">
-            {trace.source}
-          </span>
+          <span className="trace-badge-source">{trace.source}</span>
         )}
       </div>
 
-      <div className="lg:grid lg:grid-cols-5 lg:gap-4">
-        <div className="lg:col-span-3 h-[400px] lg:h-[600px] mb-4 lg:mb-0">
+      <div className="trace-detail-grid">
+        <div className="trace-map-container">
           <TraceMapWrapper
             points={serializedPoints}
             maxSpeed={trace.maxSpeedKn ?? 10}
           />
         </div>
 
-        <div className="lg:col-span-2 space-y-4">
+        <div className="trace-sidebar">
           <StatsPanel
             distanceNm={trace.distanceNm}
             durationSeconds={trace.durationSeconds}

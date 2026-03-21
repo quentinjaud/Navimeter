@@ -1,27 +1,521 @@
-@import "tailwindcss";
+@import "@mantine/core/styles.css";
 @import "leaflet/dist/leaflet.css";
 
 :root {
-  --background: #FAF8F5;
-  --foreground: #3D3A37;
+  /* Neutres — alignés sur Origami-voilier */
+  --background: #FFFDF9;
+  --foreground: #2c2c2c;
+  --text-secondary: #787774;
+  --text-light: #9b9a97;
+  --border: #e9e9e7;
+  --border-light: #f1f1ef;
+
+  /* Accents bleu */
+  --accent: #43728B;
+  --accent-dark: #365d73;
+  --accent-light: #e8f0f4;
+  --accent-hover: #d4e4eb;
+
+  /* Accents jaune */
   --accent-yellow: #F6BC00;
-  --accent-blue: #43728B;
-  --gray-light: #EDEAE6;
-  --gray-medium: #C8C3BC;
+  --accent-yellow-light: #fef9e6;
+  --accent-yellow-dark: #e5ac00;
+
+  /* Accents vert */
+  --accent-green: #2e7d32;
+  --accent-green-light: #e8f5e9;
+
+  /* Sémantiques */
+  --success: #0f7b6c;
+  --danger: #e03e3e;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-accent-yellow: var(--accent-yellow);
-  --color-accent-blue: var(--accent-blue);
-  --color-gray-light: var(--gray-light);
-  --color-gray-medium: var(--gray-medium);
-  --font-sans: var(--font-atkinson);
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
+  font-family: var(--font-atkinson), 'Atkinson Hyperlegible Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-atkinson), Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbars — alignées sur Origami */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 2px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* =============================================
+   LAYOUT
+   ============================================= */
+
+.app-header {
+  background: var(--accent);
+  color: white;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.app-header-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: white;
+  text-decoration: none;
+}
+
+.app-header-subtitle {
+  font-size: 0.875rem;
+  opacity: 0.75;
+}
+
+.app-main {
+  flex: 1;
+}
+
+/* =============================================
+   PAGE CONTAINERS
+   ============================================= */
+
+.page-container {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+/* =============================================
+   ERROR BANNER
+   ============================================= */
+
+.error-banner {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  font-size: 0.875rem;
+  color: #b91c1c;
+}
+
+/* =============================================
+   TRACE DETAIL PAGE
+   ============================================= */
+
+.trace-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.trace-back-link {
+  color: var(--accent);
+  transition: color 0.15s;
+}
+
+.trace-back-link:hover {
+  color: var(--accent-yellow);
+}
+
+.trace-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.trace-badge {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  background: var(--border);
+  color: var(--text-secondary);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.trace-badge-source {
+  font-size: 0.75rem;
+  background: var(--accent-light);
+  color: var(--accent);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.trace-detail-layout {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.trace-detail-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.trace-map-container {
+  height: 400px;
+}
+
+.trace-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 1024px) {
+  .trace-detail-layout {
+    padding: 24px;
+  }
+
+  .trace-detail-grid {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 16px;
+  }
+
+  .trace-map-container {
+    height: 600px;
+  }
+}
+
+/* =============================================
+   STATS PANEL
+   ============================================= */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.stat-card-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--accent);
+}
+
+.stat-card-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-card-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.stat-card-unit {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin-left: 4px;
+}
+
+/* =============================================
+   SPEED CHART
+   ============================================= */
+
+.chart-container {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  padding: 16px;
+}
+
+.chart-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--foreground);
+}
+
+.chart-empty {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  padding: 16px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+/* =============================================
+   FILE UPLOAD
+   ============================================= */
+
+.upload-zone {
+  border: 2px dashed var(--text-secondary);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s;
+  cursor: pointer;
+}
+
+.upload-zone:hover {
+  border-color: var(--accent);
+}
+
+.upload-zone.dragging {
+  border-color: var(--accent-yellow);
+  background: var(--accent-yellow-light);
+}
+
+.upload-label {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.upload-icon {
+  width: 40px;
+  height: 40px;
+  color: var(--accent);
+}
+
+.upload-icon.uploading {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.upload-text-primary {
+  font-weight: 700;
+}
+
+.upload-text-secondary {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.upload-error {
+  margin-top: 12px;
+  font-size: 0.875rem;
+  color: var(--danger);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* =============================================
+   TRACE LIST
+   ============================================= */
+
+.trace-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.trace-list-empty {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 32px 0;
+}
+
+.trace-list-empty-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 12px;
+  opacity: 0.4;
+}
+
+.trace-list-item {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.trace-list-item:hover {
+  border-color: var(--accent);
+}
+
+.trace-list-item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.trace-list-item-name {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trace-list-item-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.trace-list-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trace-list-delete-btn {
+  padding: 8px;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.trace-list-delete-btn:hover {
+  color: var(--danger);
+}
+
+/* =============================================
+   MAP
+   ============================================= */
+
+.map-wrapper {
+  height: 100%;
+  width: 100%;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.map-loading {
+  height: 100%;
+  width: 100%;
+  background: var(--border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.map-loading-text {
+  color: var(--text-secondary);
+}
+
+.map-popup {
+  font-size: 0.875rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.map-popup-coords {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+/* =============================================
+   LOADING SKELETON
+   ============================================= */
+
+.skeleton {
+  background: var(--border);
+  border-radius: var(--radius-lg);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* =============================================
+   NOT FOUND
+   ============================================= */
+
+.not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  text-align: center;
+}
+
+.not-found-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.not-found-text {
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.not-found-link {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.not-found-link:hover {
+  color: var(--accent-yellow);
 }

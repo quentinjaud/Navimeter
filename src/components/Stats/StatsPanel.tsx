@@ -28,18 +28,14 @@ function StatCard({
   unit: string;
 }) {
   return (
-    <div className="bg-white rounded-lg p-4 border border-gray-light shadow-sm">
-      <div className="flex items-center gap-2 mb-1">
-        <Icon className="w-4 h-4 text-accent-blue" />
-        <span className="text-xs text-gray-medium uppercase tracking-wide">
-          {label}
-        </span>
+    <div className="stat-card">
+      <div className="stat-card-header">
+        <Icon className="stat-card-icon" />
+        <span className="stat-card-label">{label}</span>
       </div>
-      <p className="text-2xl font-bold">
+      <p className="stat-card-value">
         {value}
-        <span className="text-sm font-normal text-gray-medium ml-1">
-          {unit}
-        </span>
+        <span className="stat-card-unit">{unit}</span>
       </p>
     </div>
   );
@@ -52,7 +48,7 @@ export default function StatsPanel({
   maxSpeedKn,
 }: StatsPanelProps) {
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="stats-grid">
       <StatCard
         icon={Anchor}
         label="Distance"
