@@ -18,7 +18,7 @@ export function Footer() {
       <span className="app-footer-deps">
         {Object.entries(dependances).map(([nom, version]) => (
           <span key={nom} className="app-footer-dep">
-            {nom} {version}
+            {nom} {version?.replace(/^\^/, "")}
           </span>
         ))}
       </span>

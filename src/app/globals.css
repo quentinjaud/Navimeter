@@ -95,7 +95,7 @@ body {
 
 .app-header-title {
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.025em;
   color: white;
   text-decoration: none;
@@ -116,21 +116,24 @@ body {
   padding: 12px 24px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   font-size: 0.75rem;
   color: var(--text-light);
+  overflow: hidden;
 }
 
 .app-footer-version {
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .app-footer-deps {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px 16px;
+  flex-wrap: nowrap;
+  gap: 6px 12px;
+  flex-shrink: 0;
 }
 
 .app-footer-dep {
@@ -152,8 +155,9 @@ body {
 
 .section-title {
   font-size: 1.125rem;
-  font-weight: 700;
+  font-weight: 600;
   margin-bottom: 12px;
+  color: var(--accent-yellow);
 }
 
 /* =============================================
@@ -190,7 +194,7 @@ body {
 
 .trace-title {
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .trace-badge {
@@ -289,7 +293,7 @@ body {
 
 .stat-card-value {
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .stat-card-unit {
@@ -312,7 +316,7 @@ body {
 
 .chart-title {
   font-size: 0.875rem;
-  font-weight: 700;
+  font-weight: 600;
   margin-bottom: 12px;
   color: var(--foreground);
 }
@@ -368,7 +372,7 @@ body {
 }
 
 .upload-text-primary {
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .upload-text-secondary {
@@ -433,7 +437,7 @@ body {
 }
 
 .trace-list-item-name {
-  font-weight: 700;
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -559,7 +563,7 @@ body {
 
 .not-found-title {
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 600;
   margin-bottom: 8px;
 }
 
@@ -570,7 +574,7 @@ body {
 
 .not-found-link {
   color: var(--accent);
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
   transition: color 0.15s;
 }

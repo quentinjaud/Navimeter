@@ -6,24 +6,15 @@ import { ColorSchemeScript, mantineHtmlProps } from "@mantine/core";
 import "./globals.css";
 
 const atkinson = localFont({
-  src: [
-    {
-      path: "../fonts/atkinson-400.woff2",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "../fonts/atkinson-700.woff2",
-      weight: "700",
-      style: "normal",
-    },
-  ],
+  src: "../fonts/atkinson-variable.woff2",
+  weight: "200 800",
+  style: "normal",
   variable: "--font-atkinson",
 });
 
 export const metadata: Metadata = {
   title: "Navimeter",
-  description: "Analyse de traces de navigation à voile",
+  description: "Journal de navigation et analyse de performance à la voile",
 };
 
 export default function RootLayout({
@@ -42,7 +33,7 @@ export default function RootLayout({
             <a href="/" className="app-header-title">
               Navimeter
             </a>
-            <span className="app-header-subtitle">Analyse de navigation</span>
+            <span className="app-header-subtitle">Journal de navigation et analyse de performance</span>
           </header>
           <main className="app-main">{children}</main>
           <Footer />
