@@ -8,11 +8,11 @@ import SpeedChart from "@/components/Stats/SpeedChart";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
-interface PageProps {
+interface PropsPage {
   params: Promise<{ id: string }>;
 }
 
-export default async function TraceDetailPage({ params }: PageProps) {
+export default async function TraceDetailPage({ params }: PropsPage) {
   const { id } = await params;
 
   const trace = await prisma.trace.findUnique({
@@ -26,7 +26,7 @@ export default async function TraceDetailPage({ params }: PageProps) {
 
   if (!trace) notFound();
 
-  const serializedPoints = trace.points.map((p) => ({
+  const pointsSerialises = trace.points.map((p) => ({
     lat: p.lat,
     lon: p.lon,
     timestamp: p.timestamp?.toISOString() ?? null,
@@ -52,7 +52,7 @@ export default async function TraceDetailPage({ params }: PageProps) {
       <div className="trace-detail-grid">
         <div className="trace-map-container">
           <TraceMapWrapper
-            points={serializedPoints}
+            points={pointsSerialises}
             maxSpeed={trace.maxSpeedKn ?? 10}
           />
         </div>
@@ -64,7 +64,7 @@ export default async function TraceDetailPage({ params }: PageProps) {
             avgSpeedKn={trace.avgSpeedKn}
             maxSpeedKn={trace.maxSpeedKn}
           />
-          <SpeedChart points={serializedPoints} />
+          <SpeedChart points={pointsSerialises} />
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
-export interface ParsedPoint {
+/** Point GPS analysé issu d'un fichier GPX/KML */
+export interface PointAnalyse {
   lat: number;
   lon: number;
   timestamp: Date | null;
@@ -7,25 +8,29 @@ export interface ParsedPoint {
   elevationM: number | null;
 }
 
-export interface ParsedTrace {
+/** Trace analysee (nom + points) */
+export interface TraceAnalysee {
   name: string;
-  points: ParsedPoint[];
+  points: PointAnalyse[];
 }
 
-export interface TraceStats {
+/** Statistiques calculées d'une trace */
+export interface StatistiquesTrace {
   distanceNm: number;
   durationSeconds: number;
   avgSpeedKn: number;
   maxSpeedKn: number;
 }
 
-export interface TraceWithPoints {
+/** Trace complète avec points (pour la page détail) */
+export interface TraceAvecPoints {
   id: string;
   name: string;
   filename: string;
   format: string;
   source: string;
   createdAt: string;
+  startedAt: string | null;
   distanceNm: number | null;
   durationSeconds: number | null;
   avgSpeedKn: number | null;
@@ -41,13 +46,15 @@ export interface TraceWithPoints {
   }[];
 }
 
-export interface TraceSummary {
+/** Résumé d'une trace (pour la liste) */
+export interface ResumeTrace {
   id: string;
   name: string;
   filename: string;
   format: string;
   source: string;
   createdAt: string;
+  startedAt: string | null;
   distanceNm: number | null;
   durationSeconds: number | null;
   avgSpeedKn: number | null;

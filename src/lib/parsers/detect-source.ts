@@ -1,59 +1,53 @@
 /**
  * Détecte automatiquement la source d'un fichier GPX/KML
- * en analysant les métadonnées XML (creator, namespace, extensions).
+ * en analysant les métadonnees XML (creator, namespace, extensions).
  */
-export function detectSource(xmlContent: string): string {
-  // GPX: attribut creator="..." sur la balise racine
-  const creatorMatch = xmlContent.match(/creator\s*=\s*"([^"]+)"/i);
-  const creator = creatorMatch?.[1]?.toLowerCase() ?? "";
+export function detecterSource(contenuXml: string): string {
+  // Attribut creator="..." sur la balise racine
+  const correspondance = contenuXml.match(/creator\s*=\s*"([^"]+)"/i);
+  const createur = correspondance?.[1]?.toLowerCase() ?? "";
 
-  // Navionics Boating
-  if (creator.includes("navionics") || /navionics/i.test(xmlContent.slice(0, 2000))) {
+  // Entête XML pour les recherches complémentaires (une seule fois)
+  const entete = contenuXml.slice(0, 2000).toLowerCase();
+
+  if (createur.includes("navionics") || entete.includes("navionics")) {
     return "navionics";
   }
 
-  // SailGrib WR
-  if (
-    creator.includes("sailgrib") ||
-    /sailgrib/i.test(xmlContent.slice(0, 2000))
-  ) {
+  if (createur.includes("sailgrib") || entete.includes("sailgrib")) {
     return "sailgrib";
   }
 
-  // Weather4D / App4Nav
   if (
-    creator.includes("weather4d") ||
-    creator.includes("app4nav") ||
-    /weather4d|app4nav/i.test(xmlContent.slice(0, 2000))
+    createur.includes("weather4d") ||
+    createur.includes("app4nav") ||
+    entete.includes("weather4d") ||
+    entete.includes("app4nav")
   ) {
     return "weather4d";
   }
 
-  // Navimetrix
   if (
-    creator.includes("navimetrix") ||
-    /navimetrix|gserv\.navimetrix/i.test(xmlContent.slice(0, 2000))
+    createur.includes("navimetrix") ||
+    entete.includes("navimetrix") ||
+    entete.includes("gserv.navimetrix")
   ) {
     return "navimetrix";
   }
 
-  // OpenCPN
-  if (creator.includes("opencpn")) {
+  if (createur.includes("opencpn")) {
     return "opencpn";
   }
 
-  // Garmin
-  if (creator.includes("garmin") || /xmlns[^"]*garmin/i.test(xmlContent.slice(0, 2000))) {
+  if (createur.includes("garmin") || /xmlns[^"]*garmin/.test(entete)) {
     return "garmin";
   }
 
-  // Google Earth (KML)
-  if (/google earth|xmlns[^"]*google/i.test(xmlContent.slice(0, 2000))) {
+  if (/google earth|xmlns[^"]*google/.test(entete)) {
     return "google-earth";
   }
 
-  // Strava
-  if (creator.includes("strava")) {
+  if (createur.includes("strava")) {
     return "strava";
   }
 

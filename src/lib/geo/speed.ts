@@ -1,4 +1,5 @@
-export function speedKn(distanceNm: number, timeDiffSeconds: number): number {
-  if (timeDiffSeconds <= 0) return 0;
-  return (distanceNm / timeDiffSeconds) * 3600;
+/** Calcule la vitesse en nœuds à partir d'une distance (NM) et d'un temps (secondes) */
+export function vitesseNoeuds(distanceNm: number, dureeSecondes: number): number {
+  if (dureeSecondes <= 0) return 0;
+  return (distanceNm / dureeSecondes) * 3600;
 }

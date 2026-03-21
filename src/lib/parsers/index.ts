@@ -1,23 +1,24 @@
-import type { ParsedTrace } from "../types";
-import { parseGpx } from "./gpx";
-import { parseKml } from "./kml";
+import type { TraceAnalysee } from "../types";
+import { analyserGpx } from "./gpx";
+import { analyserKml } from "./kml";
 
-export function parseTraceFile(
-  filename: string,
-  content: string
-): { trace: ParsedTrace; source: string; format: string } {
-  const ext = filename.toLowerCase().split(".").pop();
+/** Analyse un fichier trace (GPX ou KML) et retourne la trace parsée, sa source et son format */
+export function analyserFichierTrace(
+  nomFichier: string,
+  contenu: string
+): { trace: TraceAnalysee; source: string; format: string } {
+  const extension = nomFichier.toLowerCase().split(".").pop();
 
-  switch (ext) {
+  switch (extension) {
     case "gpx": {
-      const result = parseGpx(content, filename);
-      return { ...result, format: "gpx" };
+      const resultat = analyserGpx(contenu, nomFichier);
+      return { ...resultat, format: "gpx" };
     }
     case "kml": {
-      const result = parseKml(content, filename);
-      return { ...result, format: "kml" };
+      const resultat = analyserKml(contenu, nomFichier);
+      return { ...resultat, format: "kml" };
     }
     default:
-      throw new Error(`Format non supporté : .${ext}. Utilisez .gpx ou .kml`);
+      throw new Error(`Format non supporté : .${extension}. Utilisez .gpx ou .kml`);
   }
 }

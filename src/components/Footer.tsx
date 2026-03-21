@@ -1,6 +1,6 @@
 import packageJson from "../../package.json";
 
-const deps = {
+const dependances = {
   "Next.js": packageJson.dependencies.next,
   React: packageJson.dependencies.react,
   Prisma: packageJson.dependencies.prisma,
@@ -16,9 +16,9 @@ export function Footer() {
         Navimeter v{packageJson.version}
       </span>
       <span className="app-footer-deps">
-        {Object.entries(deps).map(([name, version]) => (
-          <span key={name} className="app-footer-dep">
-            {name} {version}
+        {Object.entries(dependances).map(([nom, version]) => (
+          <span key={nom} className="app-footer-dep">
+            {nom} {version}
           </span>
         ))}
       </span>
