@@ -58,7 +58,8 @@ npm run db:studio    # Prisma Studio (port 5555)
 
 ## Déploiement
 
-- Railway : auto-deploy sur push `main` via GitHub
+- Railway : auto-deploy sur push `main` via GitHub — **chaque push déclenche un build payant**
+- **Ne pas push directement sur `main`** : travailler sur une branche, regrouper les changements, puis merger quand c'est prêt
 - La variable `DATABASE_URL` utilise l'URL **interne** Railway en prod
 - Start command : `prisma migrate deploy && next start`
 - Build : `prisma generate && next build`
