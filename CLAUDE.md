@@ -8,6 +8,7 @@ App d'analyse de traces de navigation à voile.
 
 - Next.js 16 + React 19 + TypeScript + Mantine + CSS vanilla
 - Prisma 7 + PostgreSQL (Railway)
+- Better Auth (email/password, sessions 7j)
 - MapLibre GL JS + react-map-gl + OpenStreetMap + OpenSeaMap (tuiles nautiques, rendu WebGL)
 - Recharts (graphiques vitesse/temps)
 
@@ -16,20 +17,30 @@ App d'analyse de traces de navigation à voile.
 ```
 src/
 ├── app/                    # Pages Next.js (App Router)
-│   ├── page.tsx            # Accueil : upload + liste des traces
-│   ├── trace/[id]/page.tsx # Vue détaillée d'une trace (carte + stats)
-│   └── api/traces/         # API REST (POST upload, GET list, GET/DELETE by id)
+│   ├── page.tsx            # Accueil (redirige vers /traces si connecté)
+│   ├── trace/[id]/page.tsx # Vue immersive trace (carte plein écran + panneaux flottants)
+│   ├── trace/[id]/nettoyage/page.tsx  # Page nettoyage (détection aberrants, exclusion, export)
+│   └── api/traces/         # API REST (CRUD, points bulk update, export GPX)
 ├── components/
 │   ├── Map/                # TraceMap (MapLibre GL JS) + TraceMapWrapper (ssr:false)
+│   │   └── EchelleCarte    # Échelle nautique/métrique dynamique
+│   ├── Nettoyage/          # Page nettoyage : carte, graphique, contrôles, stats flottantes
 │   ├── Stats/              # StatsPanel + SpeedChart
+│   │   └── GraphiqueRedimensionnable  # Wrapper drag-resize pour graphiques
 │   ├── Upload/             # FileUpload (drag & drop, validation taille)
-│   └── TraceList/          # Liste des traces importées
+│   ├── TraceList/          # Liste des traces importées
+│   ├── TitreEditable.tsx   # Titre inline éditable (clic → input)
+│   └── TraceVueClient.tsx  # Carte + graphique synchronisés (client component)
 └── lib/
     ├── parsers/            # GPX et KML → TraceAnalysee
     │   └── commun.ts       # Logique partagée (enrichirPoints, extrairePointsGeoJson)
-    ├── geo/                # Calculs : distance, cap, vitesse, stats, simplification, lissage
-    │   └── math.ts         # Fonctions mathématiques partagées (enRadians, enDegres)
+    ├── geo/                # Calculs : distance, cap, vitesse, stats, simplification, lissage, détection aberrants
+    │   ├── math.ts         # Fonctions mathématiques partagées (enRadians, enDegres)
+    │   ├── couleur-vitesse.ts  # Gradient vitesse HSL partagé (carte + graphique)
+    │   └── detection-aberrants.ts  # Détection pics vitesse (MAD), sauts GPS, timestamps anormaux
+    ├── export/             # Export GPX nettoyé
     ├── services/           # Logique métier (import-trace.ts)
+    │   └── recalculer-stats.ts  # Recalcul stats après exclusion de points
     ├── types.ts            # Types partagés (PointAnalyse, TraceAnalysee, etc.)
     ├── theme.ts            # Constantes de couleurs (COULEURS)
     ├── utilitaires.ts      # Fonctions utilitaires (formaterDuree)
@@ -71,7 +82,12 @@ npm run db:studio    # Prisma Studio (port 5555)
 - Les coordonnées sont stockées en WGS84 (lat/lon décimaux)
 - Les points sont ordonnés par `pointIndex` (pas par timestamp, qui peut être null)
 - Validation taille fichier : 50 Mo max (client + serveur)
+- **Soft-delete GPS** : `isExcluded` sur TrackPoint, jamais de suppression de données originales
+- **Turbopack cache** : si un changement JSX n'est pas pris en compte, `rm -rf .next` et relancer le serveur
+- **Recharts types** : `onMouseMove` sur LineChart nécessite un type `any` (types incompatibles)
+- **Vues immersives** : pattern `body:has(.layout-class)` en CSS pour masquer header/footer sur les pages carte plein écran
+- **Variables CSS dynamiques** : `--hauteur-graphique` synchronise le positionnement de l'échelle et des contrôles carte avec le graphique redimensionnable
 
 ## Roadmap
 
-Voir [ROADMAP.md](ROADMAP.md) pour le backlog complet et les features à venir.
+Voir [ROADMAP.md](ROADMAP.md) pour le backlog et [CHANGELOG.md](CHANGELOG.md) pour l'historique des versions.

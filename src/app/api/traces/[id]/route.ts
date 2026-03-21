@@ -36,6 +36,45 @@ export async function GET(
   return NextResponse.json(trace);
 }
 
+export async function PATCH(
+  requete: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await obtenirSession();
+  if (!session) {
+    return NextResponse.json({ error: "Non authentifie" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const trace = await prisma.trace.findUnique({ where: { id } });
+
+  if (!trace) {
+    return NextResponse.json({ error: "Trace non trouvee" }, { status: 404 });
+  }
+
+  const userId = await obtenirIdUtilisateurEffectif(session);
+  if (trace.userId !== userId && !estAdmin(session)) {
+    return NextResponse.json({ error: "Acces refuse" }, { status: 403 });
+  }
+
+  try {
+    const { name } = await requete.json();
+    if (!name || typeof name !== "string" || name.trim().length === 0) {
+      return NextResponse.json({ error: "Nom requis" }, { status: 400 });
+    }
+
+    const mise_a_jour = await prisma.trace.update({
+      where: { id },
+      data: { name: name.trim() },
+    });
+
+    return NextResponse.json(mise_a_jour);
+  } catch (erreur) {
+    journalErreur("PATCH /api/traces/[id]", erreur);
+    return NextResponse.json({ error: "Erreur de mise a jour" }, { status: 500 });
+  }
+}
+
 export async function DELETE(
   _requete: NextRequest,
   { params }: { params: Promise<{ id: string }> }

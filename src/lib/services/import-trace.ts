@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { analyserFichierTrace } from "@/lib/parsers";
 import { calculerStats } from "@/lib/geo/stats";
+import { detecterAberrants } from "@/lib/geo/detection-aberrants";
 
 /** Taille maximale autorisée pour un fichier (50 Mo) */
 const TAILLE_MAX_OCTETS = 50 * 1024 * 1024;
@@ -35,8 +36,14 @@ export async function importerTrace(fichier: File, userId: string) {
     throw new Error("Aucun point trouvé dans le fichier");
   }
 
-  // Calcul des statistiques
-  const statistiques = calculerStats(analysee.points);
+  // Détection des points aberrants
+  const { indexAberrants } = detecterAberrants(analysee.points);
+
+  // Calcul des statistiques sur les points non-aberrants uniquement
+  const pointsPropres = analysee.points.filter((_, i) => !indexAberrants.has(i));
+  const statistiques = calculerStats(
+    pointsPropres.length >= 2 ? pointsPropres : analysee.points
+  );
   const debutNav = analysee.points.find((p) => p.timestamp)?.timestamp ?? null;
 
   // Insertion en base
@@ -61,6 +68,7 @@ export async function importerTrace(fichier: File, userId: string) {
           headingDeg: p.headingDeg,
           elevationM: p.elevationM,
           pointIndex: i,
+          isExcluded: indexAberrants.has(i),
         })),
       },
     },

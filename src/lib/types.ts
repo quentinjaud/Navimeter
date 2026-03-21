@@ -40,6 +40,7 @@ export interface TraceAvecPoints {
   avgSpeedKn: number | null;
   maxSpeedKn: number | null;
   points: {
+    id: string;
     lat: number;
     lon: number;
     timestamp: string | null;
@@ -47,7 +48,21 @@ export interface TraceAvecPoints {
     headingDeg: number | null;
     elevationM: number | null;
     pointIndex: number;
+    isExcluded: boolean;
   }[];
+}
+
+/** Point dans la vue nettoyage (enrichi avec info d'aberration) */
+export interface PointNettoyage {
+  id: string;
+  pointIndex: number;
+  lat: number;
+  lon: number;
+  timestamp: string | null;
+  speedKn: number | null;
+  headingDeg: number | null;
+  isExcluded: boolean;
+  typeAberrant: "pic_vitesse" | "saut_gps" | "timestamp_anormal" | null;
 }
 
 /** Resume d'un bateau (pour la liste) */

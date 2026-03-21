@@ -5,13 +5,15 @@ import MapGL, {
   Source,
   Layer,
   Popup,
-  NavigationControl,
+  Marker,
 } from "react-map-gl/maplibre";
 import type { MapRef, MapLayerMouseEvent } from "react-map-gl/maplibre";
 import type { StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { Layers, Map as MapIcon, Satellite, Ship, Plus, Minus, Compass } from "lucide-react";
+import EchelleCarte from "./EchelleCarte";
 
 interface PointCarte {
   lat: number;
@@ -25,48 +27,15 @@ interface PointCarte {
 interface PropsCarteTrace {
   points: PointCarte[];
   maxSpeed: number;
+  paddingBottom?: number;
+  pointSurvole?: number | null;
+  onHoverPoint?: (pointIndex: number | null) => void;
 }
 
-/** Calcule la moyenne et l'écart-type des vitesses non-null */
-function calculerStatsVitesse(points: PointCarte[]): {
-  moyenne: number;
-  ecartType: number;
-} {
-  const vitesses = points
-    .map((p) => p.speedKn)
-    .filter((v): v is number => v !== null && v > 0);
-  if (vitesses.length === 0) return { moyenne: 0, ecartType: 1 };
-
-  const moyenne = vitesses.reduce((a, b) => a + b, 0) / vitesses.length;
-  if (!isFinite(moyenne)) return { moyenne: 0, ecartType: 1 };
-  const variance =
-    vitesses.reduce((s, v) => s + (v - moyenne) ** 2, 0) / vitesses.length;
-  const ecartType = Math.sqrt(variance) || 1;
-
-  return { moyenne, ecartType };
-}
-
-/**
- * Convertit une vitesse en couleur (bleu=lent → rouge=rapide).
- * Échelle relative centrée sur la moyenne ± 2 écarts-types :
- * les variations locales de vitesse ressortent bien visuellement,
- * même quand la plage absolue est faible.
- */
-function vitesseVersCouleur(
-  vitesse: number,
-  moyenne: number,
-  ecartType: number
-): string {
-  const min = Math.max(0, moyenne - 2 * ecartType);
-  const max = moyenne + 2 * ecartType;
-  const plage = max - min;
-  if (!plage || !isFinite(plage) || !isFinite(vitesse)) {
-    return "hsl(240, 100%, 50%)";
-  }
-  const ratio = Math.max(0, Math.min((vitesse - min) / plage, 1));
-  const teinte = Math.round(240 - ratio * 240);
-  return `hsl(${teinte}, 100%, 50%)`;
-}
+import {
+  calculerStatsVitesse,
+  vitesseVersCouleur,
+} from "@/lib/geo/couleur-vitesse";
 
 /** Style MapLibre avec OSM, Satellite et OpenSeaMap */
 function creerStyleCarte(): StyleSpecification {
@@ -126,11 +95,12 @@ interface InfoPopup {
   heure: string | null;
 }
 
-export default function TraceMap({ points, maxSpeed }: PropsCarteTrace) {
+export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointSurvole, onHoverPoint }: PropsCarteTrace) {
   const mapRef = useRef<MapRef>(null);
   const [fondCarte, setFondCarte] = useState<"osm" | "satellite">("osm");
   const [afficherSeaMap, setAfficherSeaMap] = useState(true);
   const [popupInfo, setPopupInfo] = useState<InfoPopup | null>(null);
+  const [panneauCouchesOuvert, setPanneauCouchesOuvert] = useState(false);
 
   // Guard : pas de points → message au lieu d'un crash
   if (points.length === 0) {
@@ -151,11 +121,13 @@ export default function TraceMap({ points, maxSpeed }: PropsCarteTrace) {
   }, [points]);
 
   // Stats de vitesse pour le gradient relatif
-  const statsVitesse = useMemo(() => calculerStatsVitesse(points), [points]);
+  const statsVitesse = useMemo(
+    () => calculerStatsVitesse(points.map((p) => p.speedKn)),
+    [points]
+  );
 
   // Ligne continue unique avec gradient de couleur par vitesse
   const { geojsonLigne, gradientExpression } = useMemo(() => {
-    const { moyenne, ecartType } = statsVitesse;
     const coordinates = points.map((p) => [p.lon, p.lat]);
 
     // Calculer les distances cumulées pour le line-progress
@@ -172,7 +144,7 @@ export default function TraceMap({ points, maxSpeed }: PropsCarteTrace) {
     for (let i = 0; i < points.length; i++) {
       const progress = distances[i] / totalDist;
       const vitesse = points[i].speedKn ?? 0;
-      stops.push(progress, vitesseVersCouleur(vitesse, moyenne, ecartType));
+      stops.push(progress, vitesseVersCouleur(vitesse, statsVitesse));
     }
 
     return {
@@ -212,6 +184,7 @@ export default function TraceMap({ points, maxSpeed }: PropsCarteTrace) {
           vitesse: courant.speedKn ?? 0,
           cap: courant.headingDeg,
           heure: courant.timestamp,
+          segmentIndex: courant.pointIndex,
         },
       });
     }
@@ -266,22 +239,46 @@ export default function TraceMap({ points, maxSpeed }: PropsCarteTrace) {
     }
   }, []);
 
+  const handleMouseMove = useCallback(
+    (event: MapLayerMouseEvent) => {
+      if (!onHoverPoint) return;
+      const features = event.features;
+      if (features && features.length > 0) {
+        const idx = features[0].properties?.segmentIndex as number;
+        if (idx !== undefined) onHoverPoint(idx);
+      } else {
+        onHoverPoint(null);
+      }
+    },
+    [onHoverPoint]
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    onHoverPoint?.(null);
+  }, [onHoverPoint]);
+
+  // Point survolé depuis le graphique
+  const pointSurvoleData = useMemo(() => {
+    if (pointSurvole == null) return null;
+    return points.find((p) => p.pointIndex === pointSurvole) ?? null;
+  }, [points, pointSurvole]);
+
   return (
     <div className="map-wrapper" style={{ position: "relative" }}>
       <MapGL
         ref={mapRef}
         initialViewState={{
           bounds: limites,
-          fitBoundsOptions: { padding: 40 },
+          fitBoundsOptions: { padding: { top: 40, left: 40, right: 40, bottom: paddingBottom } },
         }}
         mapStyle={styleCarte}
         onClick={handleClick}
+        onMouseMove={onHoverPoint ? handleMouseMove : undefined}
+        onMouseLeave={onHoverPoint ? handleMouseLeave : undefined}
         interactiveLayerIds={["trace-segments"]}
         cursor="pointer"
         style={{ width: "100%", height: "100%" }}
       >
-        <NavigationControl position="top-left" />
-
         {/* Ligne continue avec gradient de couleur (rendu visuel) */}
         <Source
           id="trace-ligne"
@@ -348,38 +345,85 @@ export default function TraceMap({ points, maxSpeed }: PropsCarteTrace) {
             </div>
           </Popup>
         )}
+
+        {/* Marqueur de survol synchronisé */}
+        {pointSurvoleData && (
+          <Marker
+            longitude={pointSurvoleData.lon}
+            latitude={pointSurvoleData.lat}
+            anchor="center"
+          >
+            <div className="nettoyage-curseur-sync" />
+          </Marker>
+        )}
       </MapGL>
 
-      {/* Contrôle de couches */}
-      <div className="map-layer-control">
-        <label className="map-layer-radio">
-          <input
-            type="radio"
-            name="fond-carte"
-            checked={fondCarte === "osm"}
-            onChange={() => basculerFond("osm")}
-          />
-          Carte
-        </label>
-        <label className="map-layer-radio">
-          <input
-            type="radio"
-            name="fond-carte"
-            checked={fondCarte === "satellite"}
-            onChange={() => basculerFond("satellite")}
-          />
-          Satellite
-        </label>
-        <hr className="map-layer-separator" />
-        <label className="map-layer-checkbox">
-          <input
-            type="checkbox"
-            checked={afficherSeaMap}
-            onChange={(e) => basculerSeaMap(e.target.checked)}
-          />
-          OpenSeaMap
-        </label>
+      {/* Contrôles carte — boutons ronds en haut à droite */}
+      <div className="map-couches-btns">
+        <button
+          className="map-couche-btn"
+          onClick={() => mapRef.current?.getMap().zoomIn()}
+          title="Zoom avant"
+        >
+          <Plus style={{ width: 14, height: 14 }} />
+        </button>
+        <button
+          className="map-couche-btn"
+          onClick={() => mapRef.current?.getMap().zoomOut()}
+          title="Zoom arrière"
+        >
+          <Minus style={{ width: 14, height: 14 }} />
+        </button>
+        <button
+          className="map-couche-btn"
+          onClick={() => mapRef.current?.getMap().resetNorthPitch()}
+          title="Réinitialiser le nord"
+        >
+          <Compass style={{ width: 14, height: 14 }} />
+        </button>
+
+        <div className="map-couche-spacer" />
+
+        <button
+          className="map-couche-btn map-couche-btn--layers"
+          onClick={() => setPanneauCouchesOuvert((o) => !o)}
+          title="Couches"
+        >
+          <Layers style={{ width: 16, height: 16 }} />
+        </button>
+
+        {panneauCouchesOuvert && (
+          <div className="map-couches-panneau">
+            <button
+              className={`map-couche-option${fondCarte === "osm" ? " active" : ""}`}
+              onClick={() => basculerFond("osm")}
+              title="Carte"
+            >
+              <MapIcon style={{ width: 16, height: 16 }} />
+              Carte
+            </button>
+            <button
+              className={`map-couche-option${fondCarte === "satellite" ? " active" : ""}`}
+              onClick={() => basculerFond("satellite")}
+              title="Satellite"
+            >
+              <Satellite style={{ width: 16, height: 16 }} />
+              Satellite
+            </button>
+            <hr className="map-couche-sep" />
+            <button
+              className={`map-couche-option${afficherSeaMap ? " active" : ""}`}
+              onClick={() => basculerSeaMap(!afficherSeaMap)}
+              title="OpenSeaMap"
+            >
+              <Ship style={{ width: 16, height: 16 }} />
+              SeaMap
+            </button>
+          </div>
+        )}
       </div>
+
+      <EchelleCarte mapRef={mapRef} />
     </div>
   );
 }

@@ -3,11 +3,13 @@ export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { obtenirSession, estAdmin, obtenirIdUtilisateurEffectif } from "@/lib/session";
-import TraceMapWrapper from "@/components/Map/TraceMapWrapper";
 import StatsPanel from "@/components/Stats/StatsPanel";
-import SpeedChart from "@/components/Stats/SpeedChart";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eraser } from "lucide-react";
 import Link from "next/link";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import TraceVueClient from "@/components/TraceVueClient";
+import TitreEditable from "@/components/TitreEditable";
 
 interface PropsPage {
   params: Promise<{ id: string }>;
@@ -23,12 +25,12 @@ export default async function TraceDetailPage({ params }: PropsPage) {
       points: {
         orderBy: { pointIndex: "asc" },
       },
+      bateau: { select: { nom: true } },
     },
   });
 
   if (!trace) notFound();
 
-  // Verifier ownership avec l'ID effectif (impersonation prise en compte)
   if (session) {
     const userId = await obtenirIdUtilisateurEffectif(session);
     if (trace.userId !== userId && !estAdmin(session)) {
@@ -38,7 +40,10 @@ export default async function TraceDetailPage({ params }: PropsPage) {
     notFound();
   }
 
-  const pointsSerialises = trace.points.map((p) => ({
+  const pointsNonExclus = trace.points.filter((p) => !p.isExcluded);
+  const nbPointsExclus = trace.points.length - pointsNonExclus.length;
+
+  const pointsSerialises = pointsNonExclus.map((p) => ({
     lat: p.lat,
     lon: p.lon,
     timestamp: p.timestamp?.toISOString() ?? null,
@@ -49,36 +54,41 @@ export default async function TraceDetailPage({ params }: PropsPage) {
   }));
 
   return (
-    <div className="trace-detail-layout">
-      <div className="trace-header">
-        <Link href="/traces" className="trace-back-link">
-          <ArrowLeft style={{ width: 20, height: 20 }} />
+    <div className="trace-vue-layout">
+      {/* Header flottant */}
+      <div className="trace-vue-header">
+        <Link href="/traces" className="nettoyage-back">
+          <ArrowLeft style={{ width: 18, height: 18 }} />
         </Link>
-        <h1 className="trace-title">{trace.name}</h1>
-        <span className="trace-badge">{trace.format}</span>
-        {trace.source !== "unknown" && (
-          <span className="trace-badge-source">{trace.source}</span>
-        )}
+        <div className="trace-vue-header-info">
+          <TitreEditable traceId={id} nom={trace.name} />
+          <div className="trace-vue-meta">
+            {trace.startedAt && (
+              <span>{format(new Date(trace.startedAt), "d MMM yyyy", { locale: fr })}</span>
+            )}
+            {trace.bateau && <span>{trace.bateau.nom}</span>}
+          </div>
+        </div>
+        <Link href={`/trace/${id}/nettoyage`} className="trace-clean-link" title="Nettoyer">
+          <Eraser style={{ width: 16, height: 16 }} />
+        </Link>
       </div>
 
-      <div className="trace-detail-grid">
-        <div className="trace-map-container">
-          <TraceMapWrapper
-            points={pointsSerialises}
-            maxSpeed={trace.maxSpeedKn ?? 10}
-          />
-        </div>
-
-        <div className="trace-sidebar">
-          <StatsPanel
-            distanceNm={trace.distanceNm}
-            durationSeconds={trace.durationSeconds}
-            avgSpeedKn={trace.avgSpeedKn}
-            maxSpeedKn={trace.maxSpeedKn}
-          />
-          <SpeedChart points={pointsSerialises} />
-        </div>
+      {/* Stats flottantes à gauche */}
+      <div className="trace-vue-stats">
+        <StatsPanel
+          distanceNm={trace.distanceNm}
+          durationSeconds={trace.durationSeconds}
+          avgSpeedKn={trace.avgSpeedKn}
+          maxSpeedKn={trace.maxSpeedKn}
+        />
       </div>
+
+      {/* Carte + graphique redimensionnable (client component) */}
+      <TraceVueClient
+        points={pointsSerialises}
+        maxSpeed={trace.maxSpeedKn ?? 10}
+      />
     </div>
   );
 }

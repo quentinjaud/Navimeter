@@ -4,10 +4,12 @@ import { capDeg } from "../geo/heading";
 import { vitesseNoeuds } from "../geo/speed";
 import { detecterSource } from "./detect-source";
 import { decodeHtmlEntities } from "./utils";
+import { lisserGaussien } from "../geo/lissage";
 
 /**
  * Extrait les points GPS depuis un GeoJSON produit par @tmcw/togeojson.
- * Gère LineString, MultiLineString et Point.
+ * Ne conserve que les LineString et MultiLineString (traces réelles).
+ * Les Point (waypoints/POI) sont ignorés car ils faussent la trace.
  */
 export function extrairePointsGeoJson(
   geojson: GeoJSON.FeatureCollection<GeoJSON.Geometry | null>
@@ -18,6 +20,7 @@ export function extrairePointsGeoJson(
     const geometrie = feature.geometry;
     if (!geometrie) continue;
 
+    // Ignorer les waypoints/POI (type Point) — ne garder que les traces
     const tableauxCoord: number[][][] = [];
     if (geometrie.type === "LineString") {
       tableauxCoord.push(geometrie.coordinates as number[][]);
@@ -25,8 +28,6 @@ export function extrairePointsGeoJson(
       for (const ligne of geometrie.coordinates as number[][][]) {
         tableauxCoord.push(ligne);
       }
-    } else if (geometrie.type === "Point") {
-      tableauxCoord.push([geometrie.coordinates as number[]]);
     }
 
     const horodatages: string[] | undefined =
@@ -92,8 +93,12 @@ export function construireResultatParsing(
   contenu: string,
   nomFichier: string
 ): { trace: TraceAnalysee; source: string } {
-  const points = extrairePointsGeoJson(geojson);
-  enrichirPoints(points);
+  const pointsBruts = extrairePointsGeoJson(geojson);
+  enrichirPoints(pointsBruts);
+
+  // Lisser les vitesses pour réduire le bruit GPS
+  // Gaussien (sigma=2) donne un lissage doux sur ~12 points sans écraser les variations réelles
+  const points = lisserGaussien(pointsBruts, 2);
 
   const source = detecterSource(contenu);
 

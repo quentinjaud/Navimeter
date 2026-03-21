@@ -55,13 +55,13 @@ export default function StatsPanel({
       />
       <StatCard
         icon={Gauge}
-        etiquette="Vitesse moy."
+        etiquette="V. moy."
         valeur={avgSpeedKn?.toFixed(1) ?? "—"}
         unite="kn"
       />
       <StatCard
         icon={Navigation}
-        etiquette="Vitesse max"
+        etiquette="V. max"
         valeur={maxSpeedKn?.toFixed(1) ?? "—"}
         unite="kn"
       />

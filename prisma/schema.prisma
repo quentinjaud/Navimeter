@@ -111,6 +111,8 @@ model TrackPoint {
   headingDeg Float?
   elevationM Float?
   pointIndex Int
+  isExcluded Boolean  @default(false)
 
   @@index([traceId])
+  @@index([traceId, isExcluded])
 }
