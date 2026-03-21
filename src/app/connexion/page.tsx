@@ -40,9 +40,15 @@ function FormulaireConnexion() {
         return;
       }
 
-      routeur.push(retour);
-    } catch {
-      setErreur("Une erreur est survenue. Veuillez reessayer.");
+      // Forcer un hard refresh pour que le cookie soit pris en compte par le serveur
+      window.location.href = retour;
+    } catch (err) {
+      console.error("Erreur signIn:", err);
+      setErreur(
+        err instanceof Error
+          ? err.message
+          : "Une erreur est survenue. Veuillez reessayer."
+      );
       setChargement(false);
     }
   }

@@ -47,9 +47,14 @@ export default function PageInscription() {
         return;
       }
 
-      routeur.push("/traces");
-    } catch {
-      setErreur("Une erreur est survenue. Veuillez reessayer.");
+      window.location.href = "/traces";
+    } catch (err) {
+      console.error("Erreur signUp:", err);
+      setErreur(
+        err instanceof Error
+          ? err.message
+          : "Une erreur est survenue. Veuillez reessayer."
+      );
       setChargement(false);
     }
   }
