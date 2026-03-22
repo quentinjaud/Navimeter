@@ -1948,3 +1948,67 @@ body:has(.nettoyage-layout) .app-main {
   left: 0;
   pointer-events: none;
 }
+
+/* =============================================
+   PANNEAU APERCU (sidebar journal)
+   ============================================= */
+
+.panneau-apercu {
+  width: 280px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 80px;
+  align-self: flex-start;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: opacity 0.15s ease;
+}
+
+.panneau-apercu-vide {
+  border: none;
+  background: none;
+}
+
+.panneau-apercu-no-trace {
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--border-light);
+  color: var(--text-light);
+  font-size: 0.875rem;
+}
+
+.panneau-apercu-infos {
+  padding: 16px;
+}
+
+.panneau-apercu-titre {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--foreground);
+}
+
+.panneau-apercu-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.panneau-apercu-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+}
+
+.panneau-apercu-stat dt {
+  color: var(--text-secondary);
+}
+
+.panneau-apercu-stat dd {
+  font-weight: 500;
+  color: var(--foreground);
+}
