@@ -2092,6 +2092,7 @@ body:has(.nettoyage-layout) .app-main {
 .journal-vide { text-align: center; padding: 64px 0; }
 .journal-vide-icone { font-size: 3rem; margin-bottom: 16px; opacity: 0.4; }
 .journal-vide-texte { color: var(--text-secondary); font-size: 0.9375rem; }
+.journal-filtre-note { font-size: 0.75rem; color: var(--text-light); text-align: center; }
 
 /* ANIMATION */
 @keyframes deplier {
