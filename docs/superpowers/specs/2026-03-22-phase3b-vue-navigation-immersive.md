@@ -21,14 +21,15 @@ La Phase 3a a livre le journal de bord (dossiers, aventures, navigations) et la 
 ### Specifique a la vue navigation
 
 5. **Route `/navigation/[id]`** — page immersive avec NavigationVueClient
-6. **Metadonnees editables** — nom, date, type, bateau (edition inline)
+6. **Metadonnees editables** — nom, date, type (edition inline). Le bateau est celui de la trace associee (en lecture seule).
 7. **Lien depuis le journal** — CarteNavigation pointe vers `/navigation/[id]`
 
 ### Hors perimetre
 
 - Entrees journal (notes, photos) → Phase 3c
-- Animation/replay automatique (play/pause) → non retenu
+- Animation/replay automatique (play/pause) → non retenu (curseur manuel uniquement)
 - Donnees NMEA → futur, mais l'archi est extensible
+- Edition du bateau depuis la vue navigation (le bateau vit sur la trace)
 
 ## Architecture
 
@@ -94,6 +95,8 @@ Remplace `SpeedChart.tsx`. Meme base Recharts.
 **Comportement :**
 - `donnee === 'vitesse'` : axe Y en kn, gradient bleu→rouge (identique a SpeedChart actuel)
 - `donnee === 'cap'` : axe Y en degres 0-360°, couleur unique bleu `--accent` (#43728B)
+- Si la donnee est absente (ex: `headingDeg` null sur tous les points) : option desactivee dans PanneauStats, graphique non affichable
+- Points individuels avec valeur null : gaps dans la courbe (pas d'interpolation)
 - Axe X : temporel (timestamp)
 - Downsampling : max 500 points (meme algo que SpeedChart)
 - Trait vertical curseur a `pointActifIndex`
@@ -110,10 +113,12 @@ Barre horizontale sous le graphique, dans le conteneur GraphiqueRedimensionnable
 
 **Comportement :**
 - Represente la duree totale (premier→dernier timestamp)
-- Curseur draggable : trouve le point le plus proche du timestamp vise
+- Curseur draggable : trouve le point le plus proche du timestamp vise (binaire sur les points downsamplees)
 - Affiche l'heure du point actif (format HH:mm:ss)
 - Implementation legere : `<div>` custom avec drag events (pas de lib externe)
 - Largeur alignee sur le graphique au-dessus
+- Utilise le meme jeu de points downsamplees que TraceChart
+- Masquee si la trace n'a pas de timestamps
 
 ### Marqueur directionnel (carte)
 
@@ -131,7 +136,7 @@ Barre horizontale sous le graphique, dans le conteneur GraphiqueRedimensionnable
 
 ### PanneauStats enrichi
 
-Remplace `StatsPanel.tsx` ou l'enrichit.
+Nouveau composant `PanneauStats.tsx`, remplace `StatsPanel.tsx` (renommage FR + enrichissement). `StatsPanel.tsx` est supprime.
 
 **Zone haute — stats globales (inchange) :**
 - Distance (NM), duree, vitesse moy, vitesse max
@@ -154,19 +159,24 @@ Fork de `TraceVueClient` avec ajouts :
 - Badges : type (SOLO/REGATE), bateau
 
 **Metadonnees editables :**
-- Nom, date, type (SOLO/REGATE), bateau — edition inline ou mini-formulaire
+- Nom, date, type (SOLO/REGATE) — edition inline ou mini-formulaire
+- Bateau : affiche en lecture seule (vient de la trace associee)
 - Sauvegarde via PATCH `/api/journal/navigations/[id]`
+
+**Breadcrumb :**
+- Necessite le nom du dossier et de l'aventure (optionnelle) — inclure dans la requete server component
 
 ### Route `/navigation/[id]`
 
 **Server component (`page.tsx`) :**
-- Fetch navigation + trace + tous les points (meme pattern que `/trace/[id]`)
+- Requete Prisma directe (meme pattern que `/trace/[id]/page.tsx`) — pas de fetch API
+- Include : navigation + trace + trackPoints + dossier.nom + aventure?.nom + trace.bateau
 - Verification : navigation appartient au user connecte
 - Si pas de trace associee : afficher un etat vide avec lien pour associer
 
 **API :**
-- GET navigation avec trace : reutilise/enrichit l'API existante `/api/journal/navigations/[id]`
-- PATCH metadonnees : API existante, deja fonctionnelle
+- PATCH metadonnees : API existante `/api/journal/navigations/[id]`, deja fonctionnelle
+- Pas de nouveau GET — le server component query directement Prisma
 
 ### Lien depuis le journal
 
@@ -199,10 +209,13 @@ La vue navigation ajoute une classe `.navigation-vue-layout` pour les specificit
 
 ## Migration
 
-- `SpeedChart` est remplace par `TraceChart` dans les deux vues
-- `StatsPanel` est enrichi (pas de nouveau composant) ou remplace par `PanneauStats`
-- `TraceVueClient` est adapte pour utiliser les nouveaux composants (pas de regression)
-- Les imports existants dans `/trace/[id]/page.tsx` restent identiques
+- `SpeedChart.tsx` → supprime, remplace par `TraceChart.tsx`
+- `StatsPanel.tsx` → supprime, remplace par `PanneauStats.tsx`
+- `pointSurvole` → renomme en `pointActifIndex` dans TraceVueClient (coherence avec le nouveau modele)
+- `TraceVueClient` adapte pour utiliser TraceChart, PanneauStats, Timeline, marqueur directionnel
+- Extraire `PointCarte` dans `src/lib/types.ts` (actuellement duplique dans TraceVueClient et TraceMap)
+- Nettoyer le CSS `.nettoyage-curseur-sync` si remplace par le marqueur directionnel
+- Les imports dans `/trace/[id]/page.tsx` restent identiques (le server component ne change pas)
 
 ## Extensibilite
 

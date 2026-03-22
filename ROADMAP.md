@@ -109,9 +109,10 @@ User
 - [ ] Route `/navigation/[id]` : vue immersive distincte de `/trace/[id]`
   - `/trace/[id]` = vue brute, nettoyage, edition GPS (depuis "Mes traces")
   - `/navigation/[id]` = meme carte/graphique + journalisation (depuis le journal)
-- [ ] Vue navigation : carte + timeline + replay anime (play/pause/vitesse)
-- [ ] Curseur synchronise graphique ↔ carte
-- [ ] Mode edition post-nav
+- [ ] Vue navigation : carte + timeline (curseur manuel) + graphique multi-donnees (vitesse/cap)
+- [ ] Curseur directionnel synchronise carte ↔ graphique ↔ timeline
+- [ ] Panneau stats enrichi : stats globales + point actif, switch donnee graphee au clic
+- [ ] Mode edition metadonnees (nom, date, type) depuis la vue navigation
 
 ## Phase 3c — Entrees journal (v0.4.x)
 
