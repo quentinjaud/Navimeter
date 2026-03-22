@@ -10,6 +10,15 @@
 
 **Spec:** `docs/superpowers/specs/2026-03-22-phase3b-vue-navigation-immersive.md`
 
+**Parallelisation :**
+```
+Phase A : Task 1 (types)
+Phase B : Tasks 2, 3, 4, 5, 6, 10, 11 (en parallele — tous ne dependent que de Task 1)
+Phase C : Tasks 7, 9 (dependent de Phase B)
+Phase D : Tasks 8, 12 (cleanup + lien journal)
+Phase E : Task 13 (build + verification)
+```
+
 ---
 
 ## Structure de fichiers
@@ -26,11 +35,11 @@ Creer :
 
 Modifier :
   src/lib/types.ts                            — ajouter PointCarte, DonneeGraphee, types navigation
-  src/components/Map/TraceMap.tsx              — marqueur directionnel (remplace dot)
-  src/components/TraceVueClient.tsx            — utiliser nouveaux composants partages
+  src/components/Map/TraceMap.tsx              — marqueur directionnel + rename pointSurvole → pointActifIndex
+  src/components/TraceVueClient.tsx            — utiliser nouveaux composants partages (refonte complete)
   src/components/Journal/CarteNavigation.tsx   — lien vers /navigation/[id]
-  src/app/trace/[id]/page.tsx                 — PanneauStats au lieu de StatsPanel
-  src/app/globals.css                         — styles timeline, marqueur, point actif
+  src/app/trace/[id]/page.tsx                 — passer stats en props a TraceVueClient, retirer StatsPanel
+  src/app/globals.css                         — styles timeline, marqueur, point actif, navigation
 
 Supprimer :
   src/components/Stats/SpeedChart.tsx          — remplace par TraceChart
@@ -58,6 +67,7 @@ export interface PointCarte {
   timestamp: string | null;
   speedKn: number | null;
   headingDeg: number | null;
+  elevationM: number | null;
   pointIndex: number;
 }
 
@@ -328,6 +338,8 @@ git commit -m "feat: TraceChart — graphique multi-donnees (vitesse/cap)"
 Reprend le layout de `StatsPanel` pour les stats globales, ajoute une zone point actif avec switch de donnee.
 
 ```typescript
+"use client";
+
 import { Anchor, Clock, Gauge, Navigation, Compass } from "lucide-react";
 import { formaterDuree } from "@/lib/utilitaires";
 import type { PointCarte, DonneeGraphee } from "@/lib/types";
@@ -612,31 +624,32 @@ git commit -m "feat: Timeline — slider temporel avec recherche binaire"
 
 ## Task 5 : Marqueur directionnel sur TraceMap
 
+> **Note :** Cette task et la Task 7 doivent etre executees comme un seul bloc atomique — entre les deux, le build sera casse (prop renommee dans TraceMap mais pas encore dans les appelants).
+
 **Files:**
 - Modify: `src/components/Map/TraceMap.tsx`
 
 - [ ] **Step 1: Modifier TraceMap pour le marqueur directionnel**
 
-Remplacer les props `pointSurvole` par `pointActifIndex` et le dot `.nettoyage-curseur-sync` par un SVG directionnel.
-
 Changements dans `TraceMap.tsx` :
 
 1. Renommer la prop `pointSurvole` → `pointActifIndex` dans l'interface `PropsCarteTrace`
 2. Supprimer l'interface locale `PointCarte`, importer depuis `@/lib/types`
-3. Remplacer le bloc du marqueur de survol (lignes ~349-358) par :
+3. Renommer la variable interne `pointSurvoleData` → `pointActifData` dans le `useMemo`
+4. Remplacer le bloc du marqueur de survol (lignes ~349-358) par :
 
 ```typescript
 {/* Marqueur directionnel — coque de bateau */}
-{pointSurvoleData && (
+{pointActifData && (
   <Marker
-    longitude={pointSurvoleData.lon}
-    latitude={pointSurvoleData.lat}
+    longitude={pointActifData.lon}
+    latitude={pointActifData.lat}
     anchor="center"
   >
     <div
       className="marqueur-directionnel"
       style={{
-        transform: `rotate(${pointSurvoleData.headingDeg ?? 0}deg)`,
+        transform: `rotate(${pointActifData.headingDeg ?? 0}deg)`,
       }}
     >
       <svg
@@ -657,10 +670,6 @@ Changements dans `TraceMap.tsx` :
   </Marker>
 )}
 ```
-
-4. Renommer la variable interne `pointSurvole` → `pointActifIndex` dans `useMemo` pour `pointSurvoleData` (renommer aussi en `pointActifData`)
-
-Note : garder la compatibilite du nom de prop `pointSurvole` dans l'interface (renommer en `pointActifIndex`) et mettre a jour tous les appelants dans les tasks suivantes.
 
 - [ ] **Step 2: Commit**
 
@@ -789,13 +798,9 @@ Apres le bloc `.nettoyage-curseur-sync` (vers ligne 1602), ajouter :
 }
 ```
 
-- [ ] **Step 2: Supprimer le style `.nettoyage-curseur-sync`** (lignes 1594-1602)
+**Note :** Ne PAS supprimer `.nettoyage-curseur-sync` — il est utilise dans la vue nettoyage (`CarteNettoyage.tsx`).
 
-Ce style est remplace par `.marqueur-directionnel`. Verifier avant que `.nettoyage-curseur-sync` n'est pas utilise dans la vue nettoyage — si oui, le garder uniquement pour cette page.
-
-**Important :** verifier dans `src/app/trace/[id]/nettoyage/` si `.nettoyage-curseur-sync` est encore utilise. Si oui, garder le style et ne pas supprimer.
-
-- [ ] **Step 3: Commit**
+- [ ] **Step 2: Commit**
 
 ```bash
 git add src/app/globals.css
@@ -804,15 +809,19 @@ git commit -m "feat: styles timeline, marqueur directionnel, point actif"
 
 ---
 
-## Task 7 : Adapter TraceVueClient aux nouveaux composants
+## Task 7 : Adapter TraceVueClient + page.tsx aux nouveaux composants
+
+> **Note :** A executer immediatement apres Task 5 (renommage props TraceMap). Les deux tasks forment un bloc atomique.
 
 **Files:**
-- Modify: `src/components/TraceVueClient.tsx`
+- Modify: `src/components/TraceVueClient.tsx` (refonte complete)
 - Modify: `src/app/trace/[id]/page.tsx`
 
-- [ ] **Step 1: Refactorer TraceVueClient.tsx**
+- [ ] **Step 1: Remplacer integralement TraceVueClient.tsx**
 
-Remplacer le contenu complet par :
+Le PanneauStats doit vivre dans le client component car il a besoin de `pointActifIndex` et `donneeGraphee`. Les stats globales sont passees en props depuis le server component.
+
+`TraceMapWrapper.tsx` est un simple re-export `dynamic()` — les props passent directement a `TraceMap`, pas de modification necessaire.
 
 ```typescript
 "use client";
@@ -821,12 +830,17 @@ import { useCallback, useMemo, useState } from "react";
 import TraceMapWrapper from "@/components/Map/TraceMapWrapper";
 import TraceChart from "@/components/Stats/TraceChart";
 import Timeline from "@/components/Stats/Timeline";
+import PanneauStats from "@/components/Stats/PanneauStats";
 import GraphiqueRedimensionnable from "@/components/Stats/GraphiqueRedimensionnable";
 import type { PointCarte, DonneeGraphee } from "@/lib/types";
 
 interface PropsTraceVueClient {
   points: PointCarte[];
   maxSpeed: number;
+  distanceNm: number | null;
+  durationSeconds: number | null;
+  avgSpeedKn: number | null;
+  maxSpeedKn: number | null;
 }
 
 const HAUTEUR_GRAPHIQUE_INITIALE = 200;
@@ -835,6 +849,10 @@ const MARGE_GRAPHIQUE = 56;
 export default function TraceVueClient({
   points,
   maxSpeed,
+  distanceNm,
+  durationSeconds,
+  avgSpeedKn,
+  maxSpeedKn,
 }: PropsTraceVueClient) {
   const [paddingBas, setPaddingBas] = useState(
     HAUTEUR_GRAPHIQUE_INITIALE + MARGE_GRAPHIQUE
@@ -842,11 +860,15 @@ export default function TraceVueClient({
   const [pointActifIndex, setPointActifIndex] = useState<number | null>(null);
   const [donneeGraphee, setDonneeGraphee] = useState<DonneeGraphee>("vitesse");
 
-  // Verifier si des donnees de cap existent
   const capDisponible = useMemo(
     () => points.some((p) => p.headingDeg != null),
     [points]
   );
+
+  const pointActif = useMemo(() => {
+    if (pointActifIndex == null) return null;
+    return points.find((p) => p.pointIndex === pointActifIndex) ?? null;
+  }, [points, pointActifIndex]);
 
   const handleHauteurChange = useCallback((hauteur: number) => {
     setPaddingBas(hauteur + MARGE_GRAPHIQUE);
@@ -854,6 +876,21 @@ export default function TraceVueClient({
 
   return (
     <div style={{ "--hauteur-graphique": `${paddingBas}px` } as React.CSSProperties}>
+      {/* Panneau stats flottant a gauche */}
+      <div className="trace-vue-stats">
+        <PanneauStats
+          distanceNm={distanceNm}
+          durationSeconds={durationSeconds}
+          avgSpeedKn={avgSpeedKn}
+          maxSpeedKn={maxSpeedKn}
+          pointActif={pointActif}
+          donneeGraphee={donneeGraphee}
+          onChangeDonneeGraphee={setDonneeGraphee}
+          capDisponible={capDisponible}
+        />
+      </div>
+
+      {/* Carte plein ecran */}
       <div className="trace-vue-carte">
         <TraceMapWrapper
           points={points}
@@ -864,6 +901,7 @@ export default function TraceVueClient({
         />
       </div>
 
+      {/* Graphique + timeline */}
       <div className="trace-vue-graphique">
         <GraphiqueRedimensionnable
           hauteurInitiale={HAUTEUR_GRAPHIQUE_INITIALE}
@@ -889,61 +927,20 @@ export default function TraceVueClient({
 }
 ```
 
-- [ ] **Step 2: Mettre a jour TraceMapWrapper**
+- [ ] **Step 2: Mettre a jour page.tsx de /trace/[id]**
 
-Si `TraceMapWrapper.tsx` passe `pointSurvole` a `TraceMap`, renommer la prop en `pointActifIndex`. Ouvrir `src/components/Map/TraceMapWrapper.tsx` et faire le renommage.
+Supprimer l'import `StatsPanel` et le bloc `<div className="trace-vue-stats">` du server component. Passer les stats comme props a `TraceVueClient`. Le server component ne rend plus le panneau stats (il est dans le client).
 
-- [ ] **Step 3: Mettre a jour page.tsx de /trace/[id]**
-
-Dans `src/app/trace/[id]/page.tsx` :
-- Remplacer `import StatsPanel from "@/components/Stats/StatsPanel"` par `import PanneauStats from "@/components/Stats/PanneauStats"`
-- Remplacer le bloc `<StatsPanel ... />` par `<PanneauStats>` avec les nouvelles props. Le `pointActif` et `donneeGraphee` vivent dans `TraceVueClient` (client) mais `PanneauStats` est dans le server component. Il faut donc **deplacer PanneauStats dans TraceVueClient**.
-
-Modifier `TraceVueClient` pour accepter les stats en props et rendre `PanneauStats` dedans :
-
-Ajouter les props stats a `PropsTraceVueClient` :
-
-```typescript
-interface PropsTraceVueClient {
-  points: PointCarte[];
-  maxSpeed: number;
-  distanceNm: number | null;
-  durationSeconds: number | null;
-  avgSpeedKn: number | null;
-  maxSpeedKn: number | null;
-}
-```
-
-Ajouter dans le JSX de `TraceVueClient`, avant la carte :
-
-```typescript
-// Calculer le point actif
-const pointActif = useMemo(() => {
-  if (pointActifIndex == null) return null;
-  return points.find((p) => p.pointIndex === pointActifIndex) ?? null;
-}, [points, pointActifIndex]);
-```
-
-Et dans le return, ajouter le panneau stats :
+Nouveau JSX dans `page.tsx` :
 
 ```tsx
-<div className="trace-vue-stats">
-  <PanneauStats
-    distanceNm={distanceNm}
-    durationSeconds={durationSeconds}
-    avgSpeedKn={avgSpeedKn}
-    maxSpeedKn={maxSpeedKn}
-    pointActif={pointActif}
-    donneeGraphee={donneeGraphee}
-    onChangeDonneeGraphee={setDonneeGraphee}
-    capDisponible={capDisponible}
-  />
-</div>
-```
+import TraceVueClient from "@/components/TraceVueClient";
+// Supprimer : import StatsPanel from "@/components/Stats/StatsPanel";
 
-Dans `page.tsx`, supprimer le `<div className="trace-vue-stats">` et passer les stats comme props a `TraceVueClient` :
+// Dans le return, supprimer le bloc :
+//   <div className="trace-vue-stats"><StatsPanel ... /></div>
 
-```tsx
+// Modifier l'appel a TraceVueClient :
 <TraceVueClient
   points={pointsSerialises}
   maxSpeed={trace.maxSpeedKn ?? 10}
@@ -954,11 +951,11 @@ Dans `page.tsx`, supprimer le `<div className="trace-vue-stats">` et passer les 
 />
 ```
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 3: Commit**
 
 ```bash
-git add src/components/TraceVueClient.tsx src/components/Map/TraceMapWrapper.tsx src/app/trace/[id]/page.tsx
-git commit -m "refactor: TraceVueClient utilise TraceChart, PanneauStats, Timeline"
+git add src/components/TraceVueClient.tsx src/app/trace/[id]/page.tsx
+git commit -m "refactor: TraceVueClient avec TraceChart, PanneauStats, Timeline"
 ```
 
 ---
@@ -993,7 +990,9 @@ git commit -m "cleanup: suppression SpeedChart et StatsPanel (remplaces)"
 
 ---
 
-## Task 9 : Route /navigation/[id] — server component
+## Task 9 : Route /navigation/[id] — server component + loading/not-found
+
+> **Prerequis :** Task 10 (NavigationVueClient) doit etre cree AVANT cette task.
 
 **Files:**
 - Create: `src/app/navigation/[id]/page.tsx`
@@ -1095,6 +1094,7 @@ function renderPage(navigation: {
       timestamp: Date | null;
       speedKn: number | null;
       headingDeg: number | null;
+      elevationM: number | null;
       pointIndex: number;
     }[];
   } | null;
@@ -1107,6 +1107,7 @@ function renderPage(navigation: {
         timestamp: p.timestamp?.toISOString() ?? null,
         speedKn: p.speedKn,
         headingDeg: p.headingDeg,
+        elevationM: p.elevationM,
         pointIndex: p.pointIndex,
       }))
     : [];
@@ -1196,12 +1197,14 @@ git commit -m "feat: route /navigation/[id] — server component"
 
 - [ ] **Step 1: Creer NavigationVueClient.tsx**
 
-Fork de `TraceVueClient` avec metadonnees editables. Le header et le breadcrumb sont dans le server component (page.tsx). Le client gere la carte, le graphique, et l'edition des metadonnees.
+Fork de `TraceVueClient` avec metadonnees editables (nom, date, type). Le header et le breadcrumb sont dans le server component (page.tsx). Le client gere la carte, le graphique, et l'edition des metadonnees.
+
+Inclut `useEffect` pour synchroniser les props serveur apres `router.refresh()` (sinon `useState` garde l'ancienne valeur).
 
 ```typescript
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import TraceMapWrapper from "@/components/Map/TraceMapWrapper";
 import TraceChart from "@/components/Stats/TraceChart";
@@ -1247,9 +1250,15 @@ export default function NavigationVueClient({
   const [pointActifIndex, setPointActifIndex] = useState<number | null>(null);
   const [donneeGraphee, setDonneeGraphee] = useState<DonneeGraphee>("vitesse");
 
-  // Edition metadonnees
+  // Edition metadonnees — synchro avec props serveur apres refresh
   const [nomEdite, setNomEdite] = useState(nom);
   const [enEditionNom, setEnEditionNom] = useState(false);
+  const [typeEdite, setTypeEdite] = useState(type);
+  const [dateEditee, setDateEditee] = useState(date.slice(0, 10)); // YYYY-MM-DD
+
+  useEffect(() => { setNomEdite(nom); }, [nom]);
+  useEffect(() => { setTypeEdite(type); }, [type]);
+  useEffect(() => { setDateEditee(date.slice(0, 10)); }, [date]);
 
   const capDisponible = useMemo(
     () => points.some((p) => p.headingDeg != null),
@@ -1265,6 +1274,28 @@ export default function NavigationVueClient({
     setPaddingBas(hauteur + MARGE_GRAPHIQUE);
   }, []);
 
+  // Sauvegarde generique d'un champ via PATCH
+  const sauvegarderChamp = useCallback(
+    async (champ: Record<string, unknown>) => {
+      try {
+        const reponse = await fetch(
+          `/api/journal/navigations/${navigationId}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(champ),
+          }
+        );
+        if (!reponse.ok) throw new Error();
+        router.refresh();
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    [navigationId, router]
+  );
+
   const sauvegarderNom = useCallback(async () => {
     const nomNettoye = nomEdite.trim();
     if (!nomNettoye || nomNettoye === nom) {
@@ -1272,20 +1303,29 @@ export default function NavigationVueClient({
       setEnEditionNom(false);
       return;
     }
-    try {
-      const reponse = await fetch(`/api/journal/navigations/${navigationId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nom: nomNettoye }),
-      });
-      if (!reponse.ok) throw new Error();
-      setEnEditionNom(false);
-      router.refresh();
-    } catch {
-      setNomEdite(nom);
-      setEnEditionNom(false);
-    }
-  }, [nomEdite, nom, navigationId, router]);
+    const ok = await sauvegarderChamp({ nom: nomNettoye });
+    if (!ok) setNomEdite(nom);
+    setEnEditionNom(false);
+  }, [nomEdite, nom, sauvegarderChamp]);
+
+  const handleChangeType = useCallback(async () => {
+    const nouveauType = typeEdite === "SOLO" ? "REGATE" : "SOLO";
+    setTypeEdite(nouveauType);
+    const ok = await sauvegarderChamp({ type: nouveauType });
+    if (!ok) setTypeEdite(type);
+  }, [typeEdite, type, sauvegarderChamp]);
+
+  const handleChangeDate = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const nouvelleDate = e.target.value;
+      setDateEditee(nouvelleDate);
+      if (nouvelleDate) {
+        const ok = await sauvegarderChamp({ date: new Date(nouvelleDate).toISOString() });
+        if (!ok) setDateEditee(date.slice(0, 10));
+      }
+    },
+    [date, sauvegarderChamp]
+  );
 
   const dateFormatee = new Date(date).toLocaleDateString("fr-FR", {
     day: "numeric",
@@ -1305,8 +1345,14 @@ export default function NavigationVueClient({
               onChange={(e) => setNomEdite(e.target.value)}
               onBlur={sauvegarderNom}
               onKeyDown={(e) => {
-                if (e.key === "Enter") { e.preventDefault(); sauvegarderNom(); }
-                if (e.key === "Escape") { setNomEdite(nom); setEnEditionNom(false); }
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  sauvegarderNom();
+                }
+                if (e.key === "Escape") {
+                  setNomEdite(nom);
+                  setEnEditionNom(false);
+                }
               }}
               autoFocus
             />
@@ -1320,10 +1366,19 @@ export default function NavigationVueClient({
             </h2>
           )}
           <div className="navigation-meta-details">
-            <span>{dateFormatee}</span>
-            <span className={`badge-type badge-type-${type.toLowerCase()}`}>
-              {type === "REGATE" ? "Regate" : "Solo"}
-            </span>
+            <input
+              type="date"
+              className="navigation-date-input"
+              value={dateEditee}
+              onChange={handleChangeDate}
+            />
+            <button
+              className={`badge-type badge-type-${typeEdite.toLowerCase()} badge-type-cliquable`}
+              onClick={handleChangeType}
+              title="Cliquer pour basculer Solo/Regate"
+            >
+              {typeEdite === "REGATE" ? "Regate" : "Solo"}
+            </button>
             {bateau && <span>{bateau.nom}</span>}
           </div>
         </div>
@@ -1380,7 +1435,7 @@ export default function NavigationVueClient({
 
 ```bash
 git add src/components/NavigationVueClient.tsx
-git commit -m "feat: NavigationVueClient — vue immersive navigation"
+git commit -m "feat: NavigationVueClient — vue immersive avec edition metadonnees"
 ```
 
 ---
@@ -1438,6 +1493,32 @@ Apres les styles timeline ajoutes en Task 6 :
 
 .navigation-vide a {
   color: var(--accent);
+}
+
+.navigation-date-input {
+  font-family: inherit;
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 1px 4px;
+  cursor: pointer;
+}
+
+.navigation-date-input:hover,
+.navigation-date-input:focus {
+  border-color: var(--border-light);
+  outline: none;
+}
+
+.badge-type-cliquable {
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.badge-type-cliquable:hover {
+  opacity: 0.8;
 }
 ```
 
