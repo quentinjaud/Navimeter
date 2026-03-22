@@ -172,6 +172,22 @@ User
 
 ---
 
+## Principes UX
+
+- **Usage mixte desktop/tablette** : toute interaction hover doit avoir un equivalent tactile (tap, long-press, ou element toujours visible)
+- **Taille minimale des cibles tactiles** : 44px minimum pour tout element cliquable ou draggable (Apple HIG). La zone de touch peut etre plus grande que l'element visible (padding, pseudo-elements, hit area invisible)
+
+### Chantiers tablette (a integrer au fil des phases)
+
+- [ ] Slider thumbs graphique et nettoyage : zone tactile 14px → 44px
+- [ ] Resize handle graphique : zone de prise 3px → 44px
+- [ ] Actions cartes journal (edit/delete) : toujours visibles, pas seulement au hover
+- [ ] Curseur synchronise (pointSurvole) : equivalent tap pour consultation rapide sur tablette
+- [ ] Boutons contextuels : padding 4px → zone tactile 44px minimum
+- [ ] Boutons tri/filtre traces : agrandir la zone cliquable
+
+---
+
 ## Décisions techniques
 
 - **Stack** : Next.js 16 + React 19 + TypeScript + Mantine + CSS vanilla
