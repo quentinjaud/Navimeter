@@ -104,6 +104,22 @@ export interface ResumeTrace {
   bateau: { id: string; nom: string } | null;
 }
 
+// === Vue trace / navigation ===
+
+/** Point pour la carte et les graphiques (serialise depuis le server component) */
+export interface PointCarte {
+  lat: number;
+  lon: number;
+  timestamp: string | null;
+  speedKn: number | null;
+  headingDeg: number | null;
+  elevationM: number | null;
+  pointIndex: number;
+}
+
+/** Donnee affichee dans le graphique — extensible pour NMEA futur */
+export type DonneeGraphee = "vitesse" | "cap";
+
 // === Journal de bord ===
 
 export interface ResumeDossier {
