@@ -160,6 +160,18 @@ User
 
 ---
 
+## Refactorings en attente
+
+- [ ] Extraire `creerStyleCarte` en module partage (`src/lib/geo/style-carte.ts`) — duplique entre TraceMap et CarteNettoyage
+- [ ] Constantes layer IDs MapLibre (`"osm"`, `"satellite"`, `"openseamap"`) — strings repetees dans TraceMap
+- [ ] Generaliser `TitreEditable` avec callback `onSave` — reutilisable pour trace et navigation
+- [ ] Extraire SVG marqueur bateau en composant (`MarqueurBateau.tsx`) — quand un second usage apparait
+- [ ] Timeline : cleanup listeners `mousemove`/`mouseup` sur unmount (guard `useRef`)
+- [ ] URLs humanisees : slug sur les navigations (`/navigation/solo-la-rochelle` au lieu de l'ID Prisma) — generer un slug unique a partir du nom, sans accents, tirets
+- [ ] Vue journal : navigateur dossiers/aventures/navs en style "dossier ouvert" (inspiration console Next.js) — onglets imbriques, hierarchie visuelle
+
+---
+
 ## Décisions techniques
 
 - **Stack** : Next.js 16 + React 19 + TypeScript + Mantine + CSS vanilla

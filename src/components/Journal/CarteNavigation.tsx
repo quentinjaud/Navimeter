@@ -31,11 +31,11 @@ export default function CarteNavigation({
 
   return (
     <div
-      className={`carte-navigation ${navigation.trace ? "carte-navigation-cliquable" : ""}`}
+      className="carte-navigation carte-navigation-cliquable"
       onMouseEnter={() => onSurvol(navigation)}
       onMouseLeave={() => onSurvol(null)}
       onClick={() => {
-        if (navigation.trace) routeur.push(`/trace/${navigation.trace.id}`);
+        routeur.push(`/navigation/${navigation.id}`);
       }}
     >
       <div className="carte-navigation-contenu">

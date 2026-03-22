@@ -1,3 +1,5 @@
+"use client";
+
 import { Anchor, Clock, Gauge, Navigation } from "lucide-react";
 import { formaterDuree } from "@/lib/utilitaires";
 
@@ -8,7 +10,7 @@ interface PropsPanneauStats {
   maxSpeedKn: number | null;
 }
 
-function StatCard({
+function LigneStat({
   icon: Icone,
   etiquette,
   valeur,
@@ -20,46 +22,46 @@ function StatCard({
   unite: string;
 }) {
   return (
-    <div className="stat-card">
-      <div className="stat-card-header">
-        <Icone className="stat-card-icon" />
-        <span className="stat-card-label">{etiquette}</span>
+    <div className="stat-ligne">
+      <div className="stat-ligne-label">
+        <Icone className="stat-ligne-icon" />
+        <span>{etiquette}</span>
       </div>
-      <p className="stat-card-value">
+      <span className="stat-ligne-valeur">
         {valeur}
-        <span className="stat-card-unit">{unite}</span>
-      </p>
+        <span className="stat-ligne-unite">{unite}</span>
+      </span>
     </div>
   );
 }
 
-export default function StatsPanel({
+export default function PanneauStats({
   distanceNm,
   durationSeconds,
   avgSpeedKn,
   maxSpeedKn,
 }: PropsPanneauStats) {
   return (
-    <div className="stats-grid">
-      <StatCard
+    <div className="panneau-stats-compact">
+      <LigneStat
         icon={Anchor}
         etiquette="Distance"
         valeur={distanceNm?.toFixed(2) ?? "—"}
         unite="NM"
       />
-      <StatCard
+      <LigneStat
         icon={Clock}
-        etiquette="Durée"
+        etiquette="Duree"
         valeur={durationSeconds ? formaterDuree(durationSeconds) : "—"}
         unite=""
       />
-      <StatCard
+      <LigneStat
         icon={Gauge}
         etiquette="V. moy."
         valeur={avgSpeedKn?.toFixed(1) ?? "—"}
         unite="kn"
       />
-      <StatCard
+      <LigneStat
         icon={Navigation}
         etiquette="V. max"
         valeur={maxSpeedKn?.toFixed(1) ?? "—"}

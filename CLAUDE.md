@@ -2,61 +2,23 @@
 
 # Navimeter
 
-App d'analyse de traces de navigation à voile.
+App d'analyse de traces de navigation a voile — journal de bord + analyse de performance.
 
 ## Stack
 
 - Next.js 16 + React 19 + TypeScript + Mantine + CSS vanilla
 - Prisma 7 + PostgreSQL (Railway)
 - Better Auth (email/password, sessions 7j)
-- MapLibre GL JS + react-map-gl + OpenStreetMap + OpenSeaMap (tuiles nautiques, rendu WebGL)
+- MapLibre GL JS + react-map-gl (carte, SSR interdit)
 - Recharts (graphiques vitesse/temps)
-
-## Architecture
-
-```
-src/
-├── app/                    # Pages Next.js (App Router)
-│   ├── page.tsx            # Accueil (redirige vers /traces si connecté)
-│   ├── trace/[id]/page.tsx # Vue immersive trace (carte plein écran + panneaux flottants)
-│   ├── trace/[id]/nettoyage/page.tsx  # Page nettoyage (détection aberrants, exclusion, export)
-│   └── api/traces/         # API REST (CRUD, points bulk update, export GPX)
-├── components/
-│   ├── Map/                # TraceMap (MapLibre GL JS) + TraceMapWrapper (ssr:false)
-│   │   └── EchelleCarte    # Échelle nautique/métrique dynamique
-│   ├── Nettoyage/          # Page nettoyage : carte, graphique, contrôles, stats flottantes
-│   ├── Stats/              # StatsPanel + SpeedChart
-│   │   └── GraphiqueRedimensionnable  # Wrapper drag-resize pour graphiques
-│   ├── Upload/             # FileUpload (drag & drop, validation taille)
-│   ├── TraceList/          # Liste des traces importées
-│   ├── TitreEditable.tsx   # Titre inline éditable (clic → input)
-│   └── TraceVueClient.tsx  # Carte + graphique synchronisés (client component)
-└── lib/
-    ├── parsers/            # GPX et KML → TraceAnalysee
-    │   └── commun.ts       # Logique partagée (enrichirPoints, extrairePointsGeoJson)
-    ├── geo/                # Calculs : distance, cap, vitesse, stats, simplification, lissage, détection aberrants
-    │   ├── math.ts         # Fonctions mathématiques partagées (enRadians, enDegres)
-    │   ├── couleur-vitesse.ts  # Gradient vitesse HSL partagé (carte + graphique)
-    │   └── detection-aberrants.ts  # Détection pics vitesse (MAD), sauts GPS, timestamps anormaux
-    ├── export/             # Export GPX nettoyé
-    ├── services/           # Logique métier (import-trace.ts)
-    │   └── recalculer-stats.ts  # Recalcul stats après exclusion de points
-    ├── types.ts            # Types partagés (PointAnalyse, TraceAnalysee, etc.)
-    ├── theme.ts            # Constantes de couleurs (COULEURS)
-    ├── utilitaires.ts      # Fonctions utilitaires (formaterDuree)
-    ├── journal.ts          # Logger minimal (journalErreur, journalAvertissement)
-    └── db.ts               # Singleton Prisma
-```
 
 ## Conventions
 
-- **Langue** : tout en français (UI, code, commits, logs GitHub)
-- **Nommage code** : français sans accents (ex: `formaterDuree`, `detecterSource`, `PointAnalyse`)
-- **Unités nautiques** : nœuds (kn), milles nautiques (NM), degrés (°)
-- **Charte graphique** : jaune #F6BC00, bleu #43728B, gris chauds, fond crème #FFFDF9 — constantes centralisées dans `src/lib/theme.ts`
+- **Langue** : tout en francais (UI, code, commits). Nommage sans accents (`formaterDuree`, `PointAnalyse`)
+- **Unites** : noeuds (kn), milles nautiques (NM), degres
+- **Charte** : jaune #F6BC00, bleu #43728B, fond creme #FFFDF9 — voir `src/lib/theme.ts`
 - **Police** : Atkinson Hyperlegible Next
-- **Carte** : MapLibre GL JS côté client uniquement (ssr: false via TraceMapWrapper)
-- **Desktop-first** : l'analyse de traces se fait sur desktop, le responsive est secondaire
+- **Desktop-first** : le responsive est secondaire
 
 ## Commandes
 
@@ -67,27 +29,40 @@ npm run db:migrate   # Prisma migrate dev
 npm run db:studio    # Prisma Studio (port 5555)
 ```
 
-## Déploiement
+## Deploiement
 
-- Railway : auto-deploy sur push `main` via GitHub — **chaque push déclenche un build payant**
-- **Ne pas push directement sur `main`** : travailler sur une branche, regrouper les changements, puis merger quand c'est prêt
-- La variable `DATABASE_URL` utilise l'URL **interne** Railway en prod
-- Start command : `prisma migrate deploy && next start`
-- Build : `prisma generate && next build`
+- Railway : auto-deploy sur push `main` — **chaque push declenche un build payant**
+- **Ne pas push directement sur `main`** : branche → merger quand c'est pret
+- Start : `prisma migrate deploy && next start`
 
-## Points d'attention
+## Pieges connus
 
-- `force-dynamic` obligatoire sur les pages qui font des requêtes DB (sinon erreur au build)
-- MapLibre GL JS ne supporte pas le SSR → toujours wrapper avec `dynamic()` + `ssr: false`
-- Les coordonnées sont stockées en WGS84 (lat/lon décimaux)
-- Les points sont ordonnés par `pointIndex` (pas par timestamp, qui peut être null)
-- Validation taille fichier : 50 Mo max (client + serveur)
-- **Soft-delete GPS** : `isExcluded` sur TrackPoint, jamais de suppression de données originales
-- **Turbopack cache** : si un changement JSX n'est pas pris en compte, `rm -rf .next` et relancer le serveur
-- **Recharts types** : `onMouseMove` sur LineChart nécessite un type `any` (types incompatibles)
-- **Vues immersives** : pattern `body:has(.layout-class)` en CSS pour masquer header/footer sur les pages carte plein écran
-- **Variables CSS dynamiques** : `--hauteur-graphique` synchronise le positionnement de l'échelle et des contrôles carte avec le graphique redimensionnable
+- `force-dynamic` obligatoire sur les pages avec requetes DB
+- MapLibre : toujours `dynamic()` + `ssr: false`
+- Points ordonnes par `pointIndex` (pas par timestamp)
+- **Soft-delete GPS** : `isExcluded` sur TrackPoint, jamais supprimer les donnees originales
+- **Turbopack cache** : `rm -rf .next` si un changement JSX n'est pas pris en compte
+- **Routing Next.js** : un seul nom de slug par niveau de route dynamique (`[id]` partout, pas `[dossierId]` a cote de `[id]`)
+- **Recharts axe X** : `dataKey` string = axe categoriel (espacement uniforme par index). Pour un axe proportionnel au temps, utiliser `type="number"` + `scale="time"` + timestamps numeriques
+- **MutationObserver + setState** : boucle infinie garantie. Utiliser ResizeObserver ou mesure ponctuelle (setTimeout)
+- **Curseur synchronise** : pattern pointFixe/pointSurvole dans `useEtatVue` — le point affiche = survole ?? fixe
+
+## Modele de donnees
+
+```
+User → Bateau[], Trace[], Dossier[], Aventure[], Navigation[]
+
+Dossier (border jaune) → Aventure[] + Navigation[] orphelines
+Aventure (border bleu) → Navigation[]
+Navigation → Trace? (1:1, @unique traceId)
+
+Trace → TrackPoint[] + polylineSimplifiee (Json, RDP 50-100 pts pour mini-cartes)
+TrackPoint → lat, lon, timestamp?, speedKn?, isExcluded (soft-delete)
+```
+
+- Cascade delete : Dossier → Aventure → Navigation. Trace jamais supprimee par cascade.
+- Mini-cartes : tuiles OSM raster + CSS `grayscale(1)` + SVG overlay — pas d'instance MapLibre
 
 ## Roadmap
 
-Voir [ROADMAP.md](ROADMAP.md) pour le backlog et [CHANGELOG.md](CHANGELOG.md) pour l'historique des versions.
+Voir [ROADMAP.md](ROADMAP.md) et [CHANGELOG.md](CHANGELOG.md).

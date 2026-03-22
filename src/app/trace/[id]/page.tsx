@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { obtenirSession, estAdmin, obtenirIdUtilisateurEffectif } from "@/lib/session";
-import StatsPanel from "@/components/Stats/StatsPanel";
 import { ArrowLeft, Eraser } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -74,20 +73,14 @@ export default async function TraceDetailPage({ params }: PropsPage) {
         </Link>
       </div>
 
-      {/* Stats flottantes à gauche */}
-      <div className="trace-vue-stats">
-        <StatsPanel
-          distanceNm={trace.distanceNm}
-          durationSeconds={trace.durationSeconds}
-          avgSpeedKn={trace.avgSpeedKn}
-          maxSpeedKn={trace.maxSpeedKn}
-        />
-      </div>
-
-      {/* Carte + graphique redimensionnable (client component) */}
+      {/* Carte + graphique + stats (client component) */}
       <TraceVueClient
         points={pointsSerialises}
         maxSpeed={trace.maxSpeedKn ?? 10}
+        distanceNm={trace.distanceNm}
+        durationSeconds={trace.durationSeconds}
+        avgSpeedKn={trace.avgSpeedKn}
+        maxSpeedKn={trace.maxSpeedKn}
       />
     </div>
   );
