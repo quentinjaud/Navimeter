@@ -2100,3 +2100,181 @@ body:has(.nettoyage-layout) .app-main {
   from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* === Marqueur directionnel (coque bateau) === */
+.marqueur-directionnel {
+  pointer-events: none;
+  transition: transform 0.15s ease-out;
+}
+
+/* === Timeline === */
+.timeline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0 0;
+  height: 24px;
+}
+
+.timeline-barre {
+  flex: 1;
+  position: relative;
+  height: 6px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.timeline-fond {
+  position: absolute;
+  inset: 4px 0;
+  height: 6px;
+  background: var(--border-light);
+  border-radius: 3px;
+}
+
+.timeline-curseur {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent-yellow);
+  border: 2px solid white;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.25);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.timeline-heure {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+  min-width: 56px;
+  text-align: right;
+}
+
+/* === PanneauStats — point actif === */
+.panneau-stats-point-actif {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.panneau-stats-separateur {
+  height: 1px;
+  background: var(--border-light);
+  margin: 4px 0;
+}
+
+.panneau-stats-donnee {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 2px 0;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  color: var(--text-secondary);
+}
+
+.panneau-stats-donnee:disabled {
+  cursor: default;
+}
+
+.panneau-stats-donnee-active {
+  color: var(--accent);
+}
+
+.panneau-stats-donnee-active .panneau-stats-donnee-valeur {
+  font-size: clamp(16px, 2.2vw, 22px);
+  font-weight: 600;
+}
+
+.panneau-stats-donnee-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.panneau-stats-donnee-valeur {
+  font-size: clamp(12px, 1.6vw, 16px);
+  font-weight: 500;
+  transition: font-size 0.15s;
+}
+
+.panneau-stats-donnee-unite {
+  font-size: clamp(9px, 1.2vw, 11px);
+  opacity: 0.7;
+}
+
+/* === Vue navigation — metadonnees === */
+.navigation-meta {
+  margin-bottom: 8px;
+}
+
+.navigation-nom {
+  font-size: clamp(14px, 2vw, 18px);
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.navigation-meta-details {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 11px;
+  color: var(--text-light);
+  margin-top: 2px;
+}
+
+.navigation-meta-details span + span::before {
+  content: "·";
+  margin-right: 8px;
+}
+
+.navigation-breadcrumb {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.navigation-vide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 16px;
+  color: var(--text-secondary);
+}
+
+.navigation-vide a {
+  color: var(--accent);
+}
+
+.navigation-date-input {
+  font-family: inherit;
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 1px 4px;
+  cursor: pointer;
+}
+
+.navigation-date-input:hover,
+.navigation-date-input:focus {
+  border-color: var(--border-light);
+  outline: none;
+}
+
+.badge-type-cliquable {
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.badge-type-cliquable:hover {
+  opacity: 0.8;
+}

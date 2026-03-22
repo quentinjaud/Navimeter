@@ -14,21 +14,13 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Layers, Map as MapIcon, Satellite, Ship, Plus, Minus, Compass } from "lucide-react";
 import EchelleCarte from "./EchelleCarte";
-
-interface PointCarte {
-  lat: number;
-  lon: number;
-  timestamp: string | null;
-  speedKn: number | null;
-  headingDeg: number | null;
-  pointIndex: number;
-}
+import type { PointCarte } from "@/lib/types";
 
 interface PropsCarteTrace {
   points: PointCarte[];
   maxSpeed: number;
   paddingBottom?: number;
-  pointSurvole?: number | null;
+  pointActifIndex?: number | null;
   onHoverPoint?: (pointIndex: number | null) => void;
 }
 
@@ -95,7 +87,7 @@ interface InfoPopup {
   heure: string | null;
 }
 
-export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointSurvole, onHoverPoint }: PropsCarteTrace) {
+export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointActifIndex, onHoverPoint }: PropsCarteTrace) {
   const mapRef = useRef<MapRef>(null);
   const [fondCarte, setFondCarte] = useState<"osm" | "satellite">("osm");
   const [afficherSeaMap, setAfficherSeaMap] = useState(true);
@@ -258,10 +250,10 @@ export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointSu
   }, [onHoverPoint]);
 
   // Point survolé depuis le graphique
-  const pointSurvoleData = useMemo(() => {
-    if (pointSurvole == null) return null;
-    return points.find((p) => p.pointIndex === pointSurvole) ?? null;
-  }, [points, pointSurvole]);
+  const pointActifData = useMemo(() => {
+    if (pointActifIndex == null) return null;
+    return points.find((p) => p.pointIndex === pointActifIndex) ?? null;
+  }, [points, pointActifIndex]);
 
   return (
     <div className="map-wrapper" style={{ position: "relative" }}>
@@ -346,14 +338,34 @@ export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointSu
           </Popup>
         )}
 
-        {/* Marqueur de survol synchronisé */}
-        {pointSurvoleData && (
+        {/* Marqueur directionnel — coque de bateau */}
+        {pointActifData && (
           <Marker
-            longitude={pointSurvoleData.lon}
-            latitude={pointSurvoleData.lat}
+            longitude={pointActifData.lon}
+            latitude={pointActifData.lat}
             anchor="center"
           >
-            <div className="nettoyage-curseur-sync" />
+            <div
+              className="marqueur-directionnel"
+              style={{
+                transform: `rotate(${pointActifData.headingDeg ?? 0}deg)`,
+              }}
+            >
+              <svg
+                width="20"
+                height="30"
+                viewBox="0 0 20 30"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M10 0 L18 24 Q10 30 2 24 Z"
+                  fill="#F6BC00"
+                  stroke="white"
+                  strokeWidth="1.5"
+                />
+              </svg>
+            </div>
           </Marker>
         )}
       </MapGL>
