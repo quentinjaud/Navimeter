@@ -9,8 +9,12 @@ export function useEtatVue(points: PointCarte[]) {
   const [paddingBas, setPaddingBas] = useState(
     HAUTEUR_GRAPHIQUE_INITIALE + MARGE_GRAPHIQUE
   );
-  const [pointActifIndex, setPointActifIndex] = useState<number | null>(null);
+  const [pointFixeIndex, setPointFixeIndex] = useState<number | null>(null);
+  const [pointSurvoleIndex, setPointSurvoleIndex] = useState<number | null>(null);
   const [donneeGraphee, setDonneeGraphee] = useState<DonneeGraphee>("vitesse");
+
+  // Le point affiche = survole (temporaire) sinon fixe (persistant)
+  const pointActifIndex = pointSurvoleIndex ?? pointFixeIndex;
 
   const capDisponible = useMemo(
     () => points.some((p) => p.headingDeg != null),
@@ -26,10 +30,22 @@ export function useEtatVue(points: PointCarte[]) {
     setPaddingBas(hauteur + MARGE_GRAPHIQUE);
   }, []);
 
+  // Hover : position temporaire, null au mouseLeave → retour au point fixe
+  const handleHoverPoint = useCallback((index: number | null) => {
+    setPointSurvoleIndex(index);
+  }, []);
+
+  // Clic : fixe le point, reste apres la sortie du hover
+  const handleClickPoint = useCallback((index: number | null) => {
+    setPointFixeIndex(index);
+  }, []);
+
   return {
     paddingBas,
     pointActifIndex,
-    setPointActifIndex,
+    pointFixeIndex,
+    handleHoverPoint,
+    handleClickPoint,
     donneeGraphee,
     setDonneeGraphee,
     capDisponible,

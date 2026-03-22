@@ -1,5 +1,49 @@
 # Navimeter — Changelog
 
+## v0.4.1 — Phase 3b : Vue navigation immersive (2026-03-22)
+
+### Vue immersive
+- Route `/navigation/[id]` : vue immersive distincte de `/trace/[id]`
+- Composants partages entre les deux vues : TraceChart, PanneauStats, marqueur directionnel
+- Edition inline des metadonnees (nom, date) depuis la vue navigation
+- Breadcrumb dossier > aventure integre au panneau stats
+- Bouton retour journal en haut a droite (jaune pastel)
+
+### Graphique multi-donnees
+- TraceChart remplace SpeedChart : supporte vitesse et cap GPS
+- Axe X temporel numerique (proportionnel au temps, plus categoriel)
+- Gradient de couleur vitesse applique sur toutes les donnees graphees (lecture croisee)
+- Clic sur le graphique fixe le point actif, hover temporaire revient au fixe en sortie
+- Slider thumb style Mantine sur l'axe X, draggable, avec barre de progression
+
+### Marqueur directionnel
+- Curseur bateau (coque vue de dessus) sur la carte, oriente selon le cap du point actif
+- SVG jaune #F6BC00 avec contour blanc
+
+### Panneau point actif
+- Pills a fond noir semi-transparent, centrees en haut de la carte
+- Position GPS en degres/minutes/milliemes, date/heure precise, vitesse et cap
+- Clic sur vitesse/cap switch la donnee graphee
+
+### Panneau stats
+- Layout compact en lignes horizontales (remplace les cartes)
+- Icone bateau (coque) + nom colore + bouton "+" (futur mode regate)
+
+### Popup carte
+- Popup amelioree : coins arrondis, icones, coordonnees GPS formatees
+- Croix de fermeture en cercle noir externe
+- Clic sur la trace fixe le point actif (synchronise avec thumb et pills)
+
+### Composants partages
+- Types `PointCarte` et `DonneeGraphee` extraits dans `src/lib/types.ts`
+- Hook `useEtatVue` : etat centralise (pointFixe/pointSurvole, donneeGraphee, hauteur)
+- `sousechantillonner` extrait dans `src/lib/utilitaires.ts`
+
+### Nettoyage
+- SpeedChart et StatsPanel remplaces par TraceChart et PanneauStats
+- Timeline supprimee (l'axe X du graphique sert de timeline)
+- Rules of Hooks corrige dans TraceMap (guard deplace apres les hooks)
+
 ## v0.4.0 — Phase 3a : Journal — dossiers & navigations (2026-03-22)
 
 ### Journal de bord

@@ -12,7 +12,7 @@ import type { StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Layers, Map as MapIcon, Satellite, Ship, Plus, Minus, Compass } from "lucide-react";
+import { Layers, Map as MapIcon, Satellite, Ship, Plus, Minus, Compass, Gauge, Clock, MapPin } from "lucide-react";
 import EchelleCarte from "./EchelleCarte";
 import type { PointCarte } from "@/lib/types";
 
@@ -22,6 +22,7 @@ interface PropsCarteTrace {
   paddingBottom?: number;
   pointActifIndex?: number | null;
   onHoverPoint?: (pointIndex: number | null) => void;
+  onClickPoint?: (pointIndex: number) => void;
 }
 
 import {
@@ -87,7 +88,17 @@ interface InfoPopup {
   heure: string | null;
 }
 
-export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointActifIndex, onHoverPoint }: PropsCarteTrace) {
+function formaterCoord(decimal: number, positif: string, negatif: string): string {
+  const signe = decimal >= 0 ? positif : negatif;
+  const abs = Math.abs(decimal);
+  const deg = Math.floor(abs);
+  const minDec = (abs - deg) * 60;
+  const min = Math.floor(minDec);
+  const milliemes = Math.round((minDec - min) * 1000);
+  return `${deg}°${String(min).padStart(2, "0")}'${String(milliemes).padStart(3, "0")}${signe}`;
+}
+
+export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointActifIndex, onHoverPoint, onClickPoint }: PropsCarteTrace) {
   const mapRef = useRef<MapRef>(null);
   const [fondCarte, setFondCarte] = useState<"osm" | "satellite">("osm");
   const [afficherSeaMap, setAfficherSeaMap] = useState(true);
@@ -210,6 +221,7 @@ export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointAc
     const features = event.features;
     if (features && features.length > 0) {
       const f = features[0];
+      const idx = f.properties?.segmentIndex as number;
       setPopupInfo({
         lon: event.lngLat.lng,
         lat: event.lngLat.lat,
@@ -217,10 +229,13 @@ export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointAc
         cap: (f.properties?.cap as number) ?? null,
         heure: (f.properties?.heure as string) ?? null,
       });
+      if (idx !== undefined && onClickPoint) {
+        onClickPoint(idx);
+      }
     } else {
       setPopupInfo(null);
     }
-  }, []);
+  }, [onClickPoint]);
 
   const handleMouseMove = useCallback(
     (event: MapLayerMouseEvent) => {
@@ -315,24 +330,27 @@ export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointAc
           >
             <div className="map-popup">
               {popupInfo.heure && (
-                <p>
-                  <strong>Heure :</strong>{" "}
-                  {format(new Date(popupInfo.heure), "HH:mm:ss", {
-                    locale: fr,
-                  })}
-                </p>
+                <div className="map-popup-ligne">
+                  <Clock style={{ width: 11, height: 11 }} />
+                  {format(new Date(popupInfo.heure), "dd MMM yyyy  HH:mm:ss", { locale: fr })}
+                </div>
               )}
-              <p>
-                <strong>Vitesse :</strong> {popupInfo.vitesse.toFixed(1)} kn
-              </p>
-              {popupInfo.cap !== null && (
-                <p>
-                  <strong>Cap :</strong> {Math.round(popupInfo.cap)}°
-                </p>
-              )}
-              <p className="map-popup-coords">
-                {popupInfo.lat.toFixed(5)}, {popupInfo.lon.toFixed(5)}
-              </p>
+              <div className="map-popup-ligne">
+                <MapPin style={{ width: 11, height: 11 }} />
+                {formaterCoord(popupInfo.lat, "N", "S")} {formaterCoord(popupInfo.lon, "E", "W")}
+              </div>
+              <div className="map-popup-donnees">
+                <span className="map-popup-donnee">
+                  <Gauge style={{ width: 12, height: 12 }} />
+                  {popupInfo.vitesse.toFixed(1)} kn
+                </span>
+                {popupInfo.cap !== null && (
+                  <span className="map-popup-donnee">
+                    <Compass style={{ width: 12, height: 12 }} />
+                    {Math.round(popupInfo.cap)}°
+                  </span>
+                )}
+              </div>
             </div>
           </Popup>
         )}
@@ -351,17 +369,17 @@ export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointAc
               }}
             >
               <svg
-                width="20"
-                height="30"
-                viewBox="0 0 20 30"
+                width="12"
+                height="22"
+                viewBox="0 0 12 22"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M10 0 L18 24 Q10 30 2 24 Z"
+                  d="M6 0 Q12 8 11 16 L10 20 L2 20 L1 16 Q0 8 6 0 Z"
                   fill="#F6BC00"
                   stroke="white"
-                  strokeWidth="1.5"
+                  strokeWidth="1"
                 />
               </svg>
             </div>

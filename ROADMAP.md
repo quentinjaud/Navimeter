@@ -167,6 +167,8 @@ User
 - [ ] Generaliser `TitreEditable` avec callback `onSave` — reutilisable pour trace et navigation
 - [ ] Extraire SVG marqueur bateau en composant (`MarqueurBateau.tsx`) — quand un second usage apparait
 - [ ] Timeline : cleanup listeners `mousemove`/`mouseup` sur unmount (guard `useRef`)
+- [ ] URLs humanisees : slug sur les navigations (`/navigation/solo-la-rochelle` au lieu de l'ID Prisma) — generer un slug unique a partir du nom, sans accents, tirets
+- [ ] Vue journal : navigateur dossiers/aventures/navs en style "dossier ouvert" (inspiration console Next.js) — onglets imbriques, hierarchie visuelle
 
 ---
 

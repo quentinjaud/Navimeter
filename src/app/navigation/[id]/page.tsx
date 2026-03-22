@@ -65,18 +65,10 @@ export default async function NavigationDetailPage({ params }: PropsPage) {
 
   return (
     <div className="trace-vue-layout">
-      {/* Header navigation */}
-      <div className="trace-vue-header">
-        <Link href="/journal" className="nettoyage-back">
-          <ArrowLeft style={{ width: 18, height: 18 }} />
-        </Link>
-        <div className="trace-vue-header-info">
-          <span className="navigation-breadcrumb">
-            {navigation.dossier.nom}
-            {navigation.aventure && ` > ${navigation.aventure.nom}`}
-          </span>
-        </div>
-      </div>
+      <Link href="/journal" className="navigation-retour" title="Retour au journal">
+        <ArrowLeft style={{ width: 16, height: 16 }} />
+        Journal
+      </Link>
 
       {trace && trace.points.length > 0 ? (
         <NavigationVueClient
@@ -85,6 +77,7 @@ export default async function NavigationDetailPage({ params }: PropsPage) {
           date={navigation.date.toISOString()}
           type={navigation.type}
           bateau={trace.bateau}
+          breadcrumb={`${navigation.dossier.nom}${navigation.aventure ? ` > ${navigation.aventure.nom}` : ""}`}
           points={pointsSerialises}
           maxSpeed={trace.maxSpeedKn ?? 10}
           distanceNm={trace.distanceNm}

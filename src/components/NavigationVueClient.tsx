@@ -4,8 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import TraceMapWrapper from "@/components/Map/TraceMapWrapper";
 import TraceChart from "@/components/Stats/TraceChart";
-import Timeline from "@/components/Stats/Timeline";
 import PanneauStats from "@/components/Stats/PanneauStats";
+import PanneauPointActif from "@/components/Stats/PanneauPointActif";
 import GraphiqueRedimensionnable from "@/components/Stats/GraphiqueRedimensionnable";
 import type { PointCarte } from "@/lib/types";
 import { useEtatVue, HAUTEUR_GRAPHIQUE_INITIALE } from "@/lib/hooks/useEtatVue";
@@ -16,6 +16,7 @@ interface PropsNavigationVueClient {
   date: string;
   type: "SOLO" | "REGATE";
   bateau: { id: string; nom: string } | null;
+  breadcrumb: string;
   points: PointCarte[];
   maxSpeed: number;
   distanceNm: number | null;
@@ -30,6 +31,7 @@ export default function NavigationVueClient({
   date,
   type,
   bateau,
+  breadcrumb,
   points,
   maxSpeed,
   distanceNm,
@@ -41,7 +43,9 @@ export default function NavigationVueClient({
   const {
     paddingBas,
     pointActifIndex,
-    setPointActifIndex,
+    pointFixeIndex,
+    handleHoverPoint,
+    handleClickPoint,
     donneeGraphee,
     setDonneeGraphee,
     capDisponible,
@@ -52,14 +56,12 @@ export default function NavigationVueClient({
   // Edition metadonnees — synchro avec props serveur apres refresh
   const [nomEdite, setNomEdite] = useState(nom);
   const [enEditionNom, setEnEditionNom] = useState(false);
-  const [typeEdite, setTypeEdite] = useState(type);
   const [dateEditee, setDateEditee] = useState(date.slice(0, 10));
 
   useEffect(() => {
     setNomEdite(nom);
-    setTypeEdite(type);
     setDateEditee(date.slice(0, 10));
-  }, [nom, type, date]);
+  }, [nom, date]);
 
   // Sauvegarde generique d'un champ via PATCH
   const sauvegarderChamp = useCallback(
@@ -95,13 +97,6 @@ export default function NavigationVueClient({
     setEnEditionNom(false);
   }, [nomEdite, nom, sauvegarderChamp]);
 
-  const handleChangeType = useCallback(async () => {
-    const nouveauType = typeEdite === "SOLO" ? "REGATE" : "SOLO";
-    setTypeEdite(nouveauType);
-    const ok = await sauvegarderChamp({ type: nouveauType });
-    if (!ok) setTypeEdite(type);
-  }, [typeEdite, type, sauvegarderChamp]);
-
   const handleChangeDate = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const nouvelleDate = e.target.value;
@@ -118,6 +113,9 @@ export default function NavigationVueClient({
     <div style={{ "--hauteur-graphique": `${paddingBas}px` } as React.CSSProperties}>
       {/* Panneau stats + metadonnees navigation */}
       <div className="trace-vue-stats">
+        <div className="navigation-breadcrumb-flottant">
+          {breadcrumb}
+        </div>
         <div className="navigation-meta">
           {enEditionNom ? (
             <input
@@ -153,14 +151,20 @@ export default function NavigationVueClient({
               value={dateEditee}
               onChange={handleChangeDate}
             />
+            {bateau && (
+              <div className="navigation-bateau">
+                <svg width="10" height="16" viewBox="0 0 12 22" fill="none">
+                  <path d="M6 0 Q12 8 11 16 L10 20 L2 20 L1 16 Q0 8 6 0 Z" fill="#F6BC00" stroke="white" strokeWidth="1" />
+                </svg>
+                <span style={{ color: "#F6BC00" }}>{bateau.nom}</span>
+              </div>
+            )}
             <button
-              className={`badge-type badge-type-${typeEdite.toLowerCase()} badge-type-cliquable`}
-              onClick={handleChangeType}
-              title="Cliquer pour basculer Solo/Regate"
+              className="navigation-ajouter-bateau"
+              title="Ajouter un concurrent (bientot)"
             >
-              {typeEdite === "REGATE" ? "Regate" : "Solo"}
+              +
             </button>
-            {bateau && <span>{bateau.nom}</span>}
           </div>
         </div>
         <PanneauStats
@@ -168,21 +172,28 @@ export default function NavigationVueClient({
           durationSeconds={durationSeconds}
           avgSpeedKn={avgSpeedKn}
           maxSpeedKn={maxSpeedKn}
-          pointActif={pointActif}
-          donneeGraphee={donneeGraphee}
-          onChangeDonneeGraphee={setDonneeGraphee}
-          capDisponible={capDisponible}
         />
       </div>
 
-      {/* Carte */}
+      {pointActif && (
+        <div className="trace-vue-point-actif">
+          <PanneauPointActif
+            pointActif={pointActif}
+            donneeGraphee={donneeGraphee}
+            onChangeDonneeGraphee={setDonneeGraphee}
+            capDisponible={capDisponible}
+          />
+        </div>
+      )}
+
       <div className="trace-vue-carte">
         <TraceMapWrapper
           points={points}
           maxSpeed={maxSpeed}
           paddingBottom={paddingBas}
           pointActifIndex={pointActifIndex}
-          onHoverPoint={setPointActifIndex}
+          onHoverPoint={handleHoverPoint}
+          onClickPoint={handleClickPoint}
         />
       </div>
 
@@ -198,12 +209,9 @@ export default function NavigationVueClient({
             points={points}
             donnee={donneeGraphee}
             pointActifIndex={pointActifIndex}
-            onHoverPoint={setPointActifIndex}
-          />
-          <Timeline
-            points={points}
-            pointActifIndex={pointActifIndex}
-            onChangeIndex={setPointActifIndex}
+            pointFixeIndex={pointFixeIndex}
+            onHoverPoint={handleHoverPoint}
+            onClickPoint={handleClickPoint}
           />
         </GraphiqueRedimensionnable>
       </div>

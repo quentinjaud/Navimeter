@@ -2,8 +2,8 @@
 
 import TraceMapWrapper from "@/components/Map/TraceMapWrapper";
 import TraceChart from "@/components/Stats/TraceChart";
-import Timeline from "@/components/Stats/Timeline";
 import PanneauStats from "@/components/Stats/PanneauStats";
+import PanneauPointActif from "@/components/Stats/PanneauPointActif";
 import GraphiqueRedimensionnable from "@/components/Stats/GraphiqueRedimensionnable";
 import type { PointCarte } from "@/lib/types";
 import { useEtatVue, HAUTEUR_GRAPHIQUE_INITIALE } from "@/lib/hooks/useEtatVue";
@@ -28,7 +28,9 @@ export default function TraceVueClient({
   const {
     paddingBas,
     pointActifIndex,
-    setPointActifIndex,
+    pointFixeIndex,
+    handleHoverPoint,
+    handleClickPoint,
     donneeGraphee,
     setDonneeGraphee,
     capDisponible,
@@ -44,12 +46,19 @@ export default function TraceVueClient({
           durationSeconds={durationSeconds}
           avgSpeedKn={avgSpeedKn}
           maxSpeedKn={maxSpeedKn}
-          pointActif={pointActif}
-          donneeGraphee={donneeGraphee}
-          onChangeDonneeGraphee={setDonneeGraphee}
-          capDisponible={capDisponible}
         />
       </div>
+
+      {pointActif && (
+        <div className="trace-vue-point-actif">
+          <PanneauPointActif
+            pointActif={pointActif}
+            donneeGraphee={donneeGraphee}
+            onChangeDonneeGraphee={setDonneeGraphee}
+            capDisponible={capDisponible}
+          />
+        </div>
+      )}
 
       <div className="trace-vue-carte">
         <TraceMapWrapper
@@ -57,7 +66,8 @@ export default function TraceVueClient({
           maxSpeed={maxSpeed}
           paddingBottom={paddingBas}
           pointActifIndex={pointActifIndex}
-          onHoverPoint={setPointActifIndex}
+          onHoverPoint={handleHoverPoint}
+          onClickPoint={handleClickPoint}
         />
       </div>
 
@@ -72,12 +82,9 @@ export default function TraceVueClient({
             points={points}
             donnee={donneeGraphee}
             pointActifIndex={pointActifIndex}
-            onHoverPoint={setPointActifIndex}
-          />
-          <Timeline
-            points={points}
-            pointActifIndex={pointActifIndex}
-            onChangeIndex={setPointActifIndex}
+            pointFixeIndex={pointFixeIndex}
+            onHoverPoint={handleHoverPoint}
+            onClickPoint={handleClickPoint}
           />
         </GraphiqueRedimensionnable>
       </div>
