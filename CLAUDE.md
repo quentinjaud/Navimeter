@@ -19,6 +19,7 @@ App d'analyse de traces de navigation a voile — journal de bord + analyse de p
 - **Charte** : jaune #F6BC00, bleu #43728B, fond creme #FFFDF9 — voir `src/lib/theme.ts`
 - **Police** : Atkinson Hyperlegible Next
 - **Desktop-first** : le responsive est secondaire
+- **Tactile** : usage mixte desktop/tablette. Tout hover doit avoir un equivalent tactile. Taille minimale 44px pour les cibles cliquables/draggables (zone de touch, pas forcement l'element visible)
 
 ## Commandes
 
@@ -46,6 +47,8 @@ npm run db:studio    # Prisma Studio (port 5555)
 - **Recharts axe X** : `dataKey` string = axe categoriel (espacement uniforme par index). Pour un axe proportionnel au temps, utiliser `type="number"` + `scale="time"` + timestamps numeriques
 - **MutationObserver + setState** : boucle infinie garantie. Utiliser ResizeObserver ou mesure ponctuelle (setTimeout)
 - **Curseur synchronise** : pattern pointFixe/pointSurvole dans `useEtatVue` — le point affiche = survole ?? fixe
+- **Cibles tactiles** : les slider thumbs, resize handles et boutons d'action doivent avoir une zone de touch >= 44px meme si l'element visible est plus petit (utiliser padding, pseudo-elements, ou hit area invisible)
+- **Hover sur tablette** : les elements reveles au hover (actions cartes journal, tooltips) doivent etre accessibles autrement (toujours visibles, tap, ou menu contextuel)
 
 ## Modele de donnees
 
