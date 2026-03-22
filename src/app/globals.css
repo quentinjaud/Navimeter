@@ -2052,6 +2052,7 @@ body:has(.nettoyage-layout) .app-main {
 
 /* CARTE NAVIGATION */
 .carte-navigation { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); transition: border-color 0.15s; gap: 12px; }
+.carte-navigation-cliquable { cursor: pointer; }
 .carte-navigation:hover { border-color: var(--accent); }
 .carte-navigation-contenu { flex: 1; min-width: 0; }
 .carte-navigation-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }

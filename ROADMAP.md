@@ -106,6 +106,9 @@ User
 
 ## Phase 3b — Vue navigation immersive (v0.4.x)
 
+- [ ] Route `/navigation/[id]` : vue immersive distincte de `/trace/[id]`
+  - `/trace/[id]` = vue brute, nettoyage, edition GPS (depuis "Mes traces")
+  - `/navigation/[id]` = meme carte/graphique + journalisation (depuis le journal)
 - [ ] Vue navigation : carte + timeline + replay anime (play/pause/vitesse)
 - [ ] Curseur synchronise graphique ↔ carte
 - [ ] Mode edition post-nav

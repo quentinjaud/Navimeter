@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import type { ResumeNavigation } from "@/lib/types";
 
 interface PropsCarteNavigation {
@@ -15,6 +16,7 @@ export default function CarteNavigation({
   onEditer,
   onSupprimer,
 }: PropsCarteNavigation) {
+  const routeur = useRouter();
   const dateFormatee = navigation.date
     ? new Date(navigation.date).toLocaleDateString("fr-FR", {
         day: "numeric",
@@ -29,9 +31,12 @@ export default function CarteNavigation({
 
   return (
     <div
-      className="carte-navigation"
+      className={`carte-navigation ${navigation.trace ? "carte-navigation-cliquable" : ""}`}
       onMouseEnter={() => onSurvol(navigation)}
       onMouseLeave={() => onSurvol(null)}
+      onClick={() => {
+        if (navigation.trace) routeur.push(`/trace/${navigation.trace.id}`);
+      }}
     >
       <div className="carte-navigation-contenu">
         <div className="carte-navigation-header">

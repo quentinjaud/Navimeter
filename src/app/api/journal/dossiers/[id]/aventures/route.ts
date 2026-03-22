@@ -5,14 +5,14 @@ import { journalErreur } from "@/lib/journal";
 
 export async function POST(
   requete: NextRequest,
-  { params }: { params: Promise<{ dossierId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await obtenirSession();
   if (!session) {
     return NextResponse.json({ error: "Non authentifie" }, { status: 401 });
   }
 
-  const { dossierId } = await params;
+  const dossierId = (await params).id;
   const userId = await obtenirIdUtilisateurEffectif(session);
 
   const dossier = await prisma.dossier.findFirst({
