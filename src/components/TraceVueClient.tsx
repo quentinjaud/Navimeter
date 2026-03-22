@@ -1,37 +1,48 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import TraceMapWrapper from "@/components/Map/TraceMapWrapper";
-import SpeedChart from "@/components/Stats/SpeedChart";
+import TraceChart from "@/components/Stats/TraceChart";
+import Timeline from "@/components/Stats/Timeline";
+import PanneauStats from "@/components/Stats/PanneauStats";
 import GraphiqueRedimensionnable from "@/components/Stats/GraphiqueRedimensionnable";
-
-interface PointCarte {
-  lat: number;
-  lon: number;
-  timestamp: string | null;
-  speedKn: number | null;
-  headingDeg: number | null;
-  pointIndex: number;
-}
+import type { PointCarte, DonneeGraphee } from "@/lib/types";
 
 interface PropsTraceVueClient {
   points: PointCarte[];
   maxSpeed: number;
+  distanceNm: number | null;
+  durationSeconds: number | null;
+  avgSpeedKn: number | null;
+  maxSpeedKn: number | null;
 }
 
-/** Hauteur initiale du graphique en px */
 const HAUTEUR_GRAPHIQUE_INITIALE = 200;
-/** Marge du conteneur graphique (padding + bottom) */
 const MARGE_GRAPHIQUE = 56;
 
 export default function TraceVueClient({
   points,
   maxSpeed,
+  distanceNm,
+  durationSeconds,
+  avgSpeedKn,
+  maxSpeedKn,
 }: PropsTraceVueClient) {
   const [paddingBas, setPaddingBas] = useState(
     HAUTEUR_GRAPHIQUE_INITIALE + MARGE_GRAPHIQUE
   );
-  const [pointSurvole, setPointSurvole] = useState<number | null>(null);
+  const [pointActifIndex, setPointActifIndex] = useState<number | null>(null);
+  const [donneeGraphee, setDonneeGraphee] = useState<DonneeGraphee>("vitesse");
+
+  const capDisponible = useMemo(
+    () => points.some((p) => p.headingDeg != null),
+    [points]
+  );
+
+  const pointActif = useMemo(() => {
+    if (pointActifIndex == null) return null;
+    return points.find((p) => p.pointIndex === pointActifIndex) ?? null;
+  }, [points, pointActifIndex]);
 
   const handleHauteurChange = useCallback((hauteur: number) => {
     setPaddingBas(hauteur + MARGE_GRAPHIQUE);
@@ -39,18 +50,32 @@ export default function TraceVueClient({
 
   return (
     <div style={{ "--hauteur-graphique": `${paddingBas}px` } as React.CSSProperties}>
-      {/* Carte plein écran — padding bottom pour ne pas cacher la trace sous le graphique */}
+      {/* Panneau stats flottant a gauche */}
+      <div className="trace-vue-stats">
+        <PanneauStats
+          distanceNm={distanceNm}
+          durationSeconds={durationSeconds}
+          avgSpeedKn={avgSpeedKn}
+          maxSpeedKn={maxSpeedKn}
+          pointActif={pointActif}
+          donneeGraphee={donneeGraphee}
+          onChangeDonneeGraphee={setDonneeGraphee}
+          capDisponible={capDisponible}
+        />
+      </div>
+
+      {/* Carte plein ecran */}
       <div className="trace-vue-carte">
         <TraceMapWrapper
           points={points}
           maxSpeed={maxSpeed}
           paddingBottom={paddingBas}
-          pointSurvole={pointSurvole}
-          onHoverPoint={setPointSurvole}
+          pointActifIndex={pointActifIndex}
+          onHoverPoint={setPointActifIndex}
         />
       </div>
 
-      {/* Graphique redimensionnable docké en bas */}
+      {/* Graphique + timeline */}
       <div className="trace-vue-graphique">
         <GraphiqueRedimensionnable
           hauteurInitiale={HAUTEUR_GRAPHIQUE_INITIALE}
@@ -58,10 +83,16 @@ export default function TraceVueClient({
           hauteurMax={450}
           onHauteurChange={handleHauteurChange}
         >
-          <SpeedChart
+          <TraceChart
             points={points}
-            pointSurvole={pointSurvole}
-            onHoverPoint={setPointSurvole}
+            donnee={donneeGraphee}
+            pointActifIndex={pointActifIndex}
+            onHoverPoint={setPointActifIndex}
+          />
+          <Timeline
+            points={points}
+            pointActifIndex={pointActifIndex}
+            onChangeIndex={setPointActifIndex}
           />
         </GraphiqueRedimensionnable>
       </div>
