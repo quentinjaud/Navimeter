@@ -19,6 +19,7 @@ import {
 } from "@/lib/geo/couleur-vitesse";
 import type { PointCarte, DonneeGraphee, CelluleMeteoClient } from "@/lib/types";
 import { sousechantillonner } from "@/lib/utilitaires";
+import { trouverCelluleActive } from "@/lib/geo/stats-vent";
 
 interface PropsTraceChart {
   points: PointCarte[];
@@ -440,15 +441,40 @@ export default function TraceChart({
             domain={modeVent ? (modeVentDirection ? CONFIG_VENT_DIR.domaine : undefined) : config.domaine}
           />
           <Tooltip
-            labelFormatter={(t) =>
-              format(new Date(t as number), "HH:mm:ss")
-            }
-            formatter={(value) => [formaterActif(Number(value)), titreActif]}
-            contentStyle={{
-              backgroundColor: COULEURS.fond,
-              border: `1px solid ${COULEURS.bordure}`,
-              borderRadius: 8,
-              fontSize: 12,
+            content={({ active, label }) => {
+              if (!active || label == null) return null;
+              const t = Number(label);
+              const heure = format(new Date(t), "HH:mm:ss");
+
+              if (modeVent) {
+                // Tooltip vent : force + direction
+                const cellule = cellulesMeteo?.length
+                  ? trouverCelluleActive(cellulesMeteo, new Date(t).toISOString(), 0, 0)
+                  : null;
+                const force = cellule ? `${Math.round(cellule.ventVitesseKn)} kn` : "—";
+                const dir = cellule ? `${Math.round(cellule.ventDirectionDeg)}°` : "—";
+                return (
+                  <div className="chart-tooltip-compact">
+                    <span className="chart-tooltip-heure">{heure}</span>
+                    <span className="chart-tooltip-val" title="Force du vent">💨 {force}</span>
+                    <span className="chart-tooltip-val" title="Direction du vent">🧭 {dir}</span>
+                  </div>
+                );
+              }
+
+              // Tooltip nav : vitesse + cap
+              const pt = donneesActives.find((d) => d.temps === t);
+              const vitesse = pt ? `${pt.valeur.toFixed(1)} kn` : "—";
+              // Trouver le cap pour ce point
+              const pointGps = points.find((p) => p.timestamp && Math.abs(new Date(p.timestamp).getTime() - t) < 5000);
+              const cap = pointGps?.headingDeg != null ? `${Math.round(pointGps.headingDeg)}°` : "—";
+              return (
+                <div className="chart-tooltip-compact">
+                  <span className="chart-tooltip-heure">{heure}</span>
+                  <span className="chart-tooltip-val" title="Vitesse">⛵ {vitesse}</span>
+                  <span className="chart-tooltip-val" title="Cap">🧭 {cap}</span>
+                </div>
+              );
             }}
           />
           {!modeVent && gradientStops && (

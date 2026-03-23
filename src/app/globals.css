@@ -1833,15 +1833,35 @@ body:has(.trace-vue-layout) .app-main {
   display: none !important;
 }
 
-.hud-vent-deploye .recharts-tooltip-wrapper {
-  display: none !important;
-}
 
 .hud-vent-deploye .recharts-wrapper {
   margin: 0 auto;
 }
 
 /* Masquer le slider en mode compact */
+/* Tooltip compact — icones + valeurs en ligne */
+.chart-tooltip-compact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.chart-tooltip-heure {
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 400;
+}
+
+.chart-tooltip-val {
+  color: white;
+  font-weight: 600;
+}
+
 .hud-vent-deploye .chart-slider-zone {
   display: none;
 }
@@ -2005,7 +2025,7 @@ body:has(.nettoyage-layout) .app-main {
 /* Echelle carte : remonter quand HUD vent deploye */
 /* Quand le HUD vent est deploye (frere de map-wrapper), remonter zoom+echelle */
 :has(> .trace-vue-vent > .hud-vent-deploye) > .trace-vue-carte .map-bas-gauche {
-  bottom: calc(var(--hauteur-graphique, 230px) + 96px);
+  bottom: calc(var(--hauteur-graphique, 230px) + 77px);
 }
 
 .echelle-carte {
