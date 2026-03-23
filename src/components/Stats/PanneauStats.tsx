@@ -218,7 +218,7 @@ export default function PanneauStats({
             unite="°"
           />
           <div className="stats-vent-source">
-            <span>Open-Meteo archive</span>
+            <span>AROME France · 2.5km/1h</span>
             <button
               className="stats-vent-supprimer"
               onClick={supprimerMeteo}
@@ -246,7 +246,7 @@ export default function PanneauStats({
               type="button"
             >
               <Wind size={13} />
-              Disponible apres 7 jours
+              Disponible apres 2 jours
             </button>
           ) : etat === "chargement" ? (
             <button

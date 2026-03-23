@@ -66,14 +66,14 @@ export default async function TraceDetailPage({ params }: PropsPage) {
     : cellulesMeteo;
   const statsVent =
     cellulesMeteo.length > 0
-      ? { ...calculerStatsVent(cellulesNav), source: "open-meteo-archive", resolution: "25km/1h" }
+      ? { ...calculerStatsVent(cellulesNav), source: "AROME France", resolution: "2.5km/1h" }
       : null;
   const traceTropRecente =
     traceTimestamps &&
     pointsNonExclus.length > 0 &&
     (() => {
       const dernierTs = pointsNonExclus.filter((p) => p.timestamp).pop()?.timestamp;
-      return dernierTs ? Date.now() - new Date(dernierTs).getTime() < 7 * 24 * 60 * 60 * 1000 : false;
+      return dernierTs ? Date.now() - new Date(dernierTs).getTime() < 2 * 24 * 60 * 60 * 1000 : false;
     })();
 
   const pointsSerialises = pointsNonExclus.map((p) => ({

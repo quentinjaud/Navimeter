@@ -2,9 +2,10 @@ import { prisma } from "@/lib/db";
 import { calculerStatsVent, filtrerCellulesParPlage } from "../geo/stats-vent";
 import type { StatsVent, CelluleMeteoClient } from "../types";
 
-const OPEN_METEO_ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive";
-const GRILLE_DEG = 0.25;
-const DELAI_ARCHIVE_MS = 7 * 24 * 60 * 60 * 1000;
+const OPEN_METEO_URL = "https://historical-forecast-api.open-meteo.com/v1/forecast";
+const MODELE = "meteofrance_arome_france";
+const GRILLE_DEG = 0.025; // ~2.5 km (resolution AROME)
+const DELAI_ARCHIVE_MS = 2 * 24 * 60 * 60 * 1000; // 2 jours (historical forecast dispo plus vite)
 
 function arrondir(coord: number): number {
   return Math.round(coord / GRILLE_DEG) * GRILLE_DEG;
@@ -21,7 +22,7 @@ function determinerCentresCellules(
 
   for (let lat = latDebut; lat <= latFin + GRILLE_DEG / 2; lat += GRILLE_DEG) {
     for (let lon = lonDebut; lon <= lonFin + GRILLE_DEG / 2; lon += GRILLE_DEG) {
-      centres.push({ lat: Math.round(lat * 100) / 100, lon: Math.round(lon * 100) / 100 });
+      centres.push({ lat: Math.round(lat * 1000) / 1000, lon: Math.round(lon * 1000) / 1000 });
     }
   }
   return centres;
@@ -48,7 +49,7 @@ export async function chargerVentOpenMeteo(traceId: string): Promise<{
 
   const dernierTimestamp = points[points.length - 1].timestamp!;
   if (Date.now() - dernierTimestamp.getTime() < DELAI_ARCHIVE_MS) {
-    throw new Error("Trace trop recente — donnees archives disponibles apres 7 jours");
+    throw new Error("Trace trop recente — donnees disponibles apres 2 jours");
   }
 
   let latMin = Infinity, latMax = -Infinity, lonMin = Infinity, lonMax = -Infinity;
@@ -81,7 +82,7 @@ export async function chargerVentOpenMeteo(traceId: string): Promise<{
     const lats = batch.map((c) => c.lat).join(",");
     const lons = batch.map((c) => c.lon).join(",");
 
-    const url = `${OPEN_METEO_ARCHIVE_URL}?latitude=${lats}&longitude=${lons}&start_date=${dateDebut}&end_date=${dateFin}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&timezone=UTC`;
+    const url = `${OPEN_METEO_URL}?latitude=${lats}&longitude=${lons}&start_date=${dateDebut}&end_date=${dateFin}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&timezone=UTC&models=${MODELE}`;
 
     const response = await fetch(url);
     if (!response.ok) {
@@ -141,8 +142,8 @@ export async function chargerVentOpenMeteo(traceId: string): Promise<{
   );
   const statsVent: StatsVent = {
     ...calculerStatsVent(cellulesNav),
-    source: "open-meteo-archive",
-    resolution: "25km/1h",
+    source: "AROME France",
+    resolution: "2.5km/1h",
   };
 
   return { statsVent, cellules: cellulesClient };
