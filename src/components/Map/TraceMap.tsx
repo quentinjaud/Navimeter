@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import MapGL, {
   Source,
   Layer,
@@ -12,8 +12,10 @@ import type { StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Layers, Map as MapIcon, Satellite, Ship, Plus, Minus, Compass, Gauge, Clock, MapPin } from "lucide-react";
+import { Layers, Map as MapIcon, Satellite, Ship, Plus, Minus, Compass, Gauge, Clock, MapPin, Check } from "lucide-react";
 import EchelleCarte from "./EchelleCarte";
+import RoseDesVents from "./RoseDesVents";
+import { trouverCelluleActive } from "@/lib/geo/stats-vent";
 import type { PointCarte, CelluleMeteoClient, StatsVent, DonneeGraphee } from "@/lib/types";
 
 interface PropsCarteTrace {
@@ -103,12 +105,14 @@ function formaterCoord(decimal: number, positif: string, negatif: string): strin
   return `${deg}°${String(min).padStart(2, "0")}'${String(milliemes).padStart(3, "0")}${signe}`;
 }
 
-export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointActifIndex, onHoverPoint, onClickPoint }: PropsCarteTrace) {
+export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointActifIndex, onHoverPoint, onClickPoint, cellulesMeteo, statsVent, donneeGraphee, onClickRoseDesVents }: PropsCarteTrace) {
   const mapRef = useRef<MapRef>(null);
   const [fondCarte, setFondCarte] = useState<"osm" | "satellite">("osm");
   const [afficherSeaMap, setAfficherSeaMap] = useState(true);
   const [popupInfo, setPopupInfo] = useState<InfoPopup | null>(null);
   const [panneauCouchesOuvert, setPanneauCouchesOuvert] = useState(false);
+  const [modeOrientation, setModeOrientation] = useState<"nord" | "vent">("nord");
+  const [popoverBoussole, setPopoverBoussole] = useState(false);
 
   const limites = useMemo(() => {
     const lons = points.map((p) => p.lon);
@@ -266,6 +270,23 @@ export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointAc
     return points.find((p) => p.pointIndex === pointActifIndex) ?? null;
   }, [points, pointActifIndex]);
 
+  // Cellule meteo active pour le point courant
+  const celluleActive = useMemo(() => {
+    if (!cellulesMeteo?.length || !pointActifData) return null;
+    return trouverCelluleActive(
+      cellulesMeteo,
+      pointActifData.timestamp,
+      pointActifData.lat,
+      pointActifData.lon
+    );
+  }, [cellulesMeteo, pointActifData]);
+
+  // Rotation dynamique de la carte quand le mode "vent" est actif
+  useEffect(() => {
+    if (modeOrientation !== "vent" || !celluleActive) return;
+    mapRef.current?.rotateTo(celluleActive.ventDirectionDeg, { duration: 500 });
+  }, [modeOrientation, celluleActive?.ventDirectionDeg]);
+
   if (points.length === 0) {
     return (
       <div className="map-loading">
@@ -408,13 +429,50 @@ export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointAc
         >
           <Minus style={{ width: 14, height: 14 }} />
         </button>
-        <button
-          className="map-couche-btn"
-          onClick={() => mapRef.current?.getMap().resetNorthPitch()}
-          title="Réinitialiser le nord"
-        >
-          <Compass style={{ width: 14, height: 14 }} />
-        </button>
+        <div style={{ position: "relative" }}>
+          <button
+            className={`map-couche-btn${modeOrientation === "vent" ? " map-couche-btn--actif" : ""}`}
+            onClick={() => setPopoverBoussole((o) => !o)}
+            title="Orientation de la carte"
+          >
+            <Compass style={{ width: 14, height: 14 }} />
+          </button>
+
+          {popoverBoussole && (
+            <div className="popover-boussole">
+              <button
+                className={`map-couche-option${modeOrientation === "nord" ? " active" : ""}`}
+                onClick={() => {
+                  setModeOrientation("nord");
+                  mapRef.current?.resetNorthPitch();
+                  setPopoverBoussole(false);
+                }}
+              >
+                {modeOrientation === "nord" && <Check style={{ width: 12, height: 12 }} />}
+                {modeOrientation !== "nord" && <span style={{ width: 12, display: "inline-block" }} />}
+                Nord
+              </button>
+              <button
+                className={`map-couche-option${modeOrientation === "vent" ? " active" : ""}${!statsVent ? " map-couche-option--desactive" : ""}`}
+                onClick={() => {
+                  if (!statsVent) return;
+                  setModeOrientation("vent");
+                  mapRef.current?.rotateTo(
+                    celluleActive?.ventDirectionDeg ?? statsVent.directionMoyenneDeg,
+                    { duration: 500 }
+                  );
+                  setPopoverBoussole(false);
+                }}
+                disabled={!statsVent}
+                title={!statsVent ? "Aucune donnée météo disponible" : "Orienter la carte face au vent"}
+              >
+                {modeOrientation === "vent" && <Check style={{ width: 12, height: 12 }} />}
+                {modeOrientation !== "vent" && <span style={{ width: 12, display: "inline-block" }} />}
+                Vent archive
+              </button>
+            </div>
+          )}
+        </div>
 
         <div className="map-couche-spacer" />
 
@@ -456,6 +514,15 @@ export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointAc
           </div>
         )}
       </div>
+
+      {statsVent && (
+        <RoseDesVents
+          celluleActive={celluleActive}
+          statsVent={statsVent}
+          donneeGraphee={donneeGraphee ?? "vitesse"}
+          onClick={onClickRoseDesVents ?? (() => {})}
+        />
+      )}
 
       <EchelleCarte mapRef={mapRef} />
     </div>
