@@ -570,9 +570,41 @@ body {
   gap: 3px;
 }
 
-.map-couche-btn {
+/* Zoom +/- pill collee */
+.map-zoom-pill {
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12);
+}
+
+.map-zoom-btn {
   width: 30px;
-  height: 30px;
+  height: 28px;
+  border: none;
+  background: rgba(255, 253, 249, 0.92);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--foreground);
+  transition: background 0.15s;
+}
+
+.map-zoom-btn:first-child {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.map-zoom-btn:hover {
+  background: white;
+}
+
+/* Boutons selecteurs (couches, orientation) */
+.map-couche-btn {
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   border: none;
   background: rgba(255, 253, 249, 0.92);
@@ -585,6 +617,7 @@ body {
   color: var(--foreground);
   transition: background 0.15s, box-shadow 0.15s;
 }
+
 .map-couche-btn:hover {
   background: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
@@ -595,8 +628,17 @@ body {
   height: 34px;
 }
 
+.map-couche-btn--actif {
+  background: #43728B;
+  color: #F6BC00;
+}
+
+.map-couche-btn--actif:hover {
+  background: #3a6479;
+}
+
 .map-couche-spacer {
-  height: 2px;
+  height: 4px;
 }
 
 .map-couches-panneau {
@@ -650,23 +692,6 @@ body {
 }
 
 /* Popover orientation boussole */
-.popover-boussole {
-  position: absolute;
-  top: 0;
-  right: calc(100% + 8px);
-  background: rgba(255, 253, 249, 0.95);
-  backdrop-filter: blur(8px);
-  border-radius: 10px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
-  padding: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 140px;
-  white-space: nowrap;
-  z-index: 20;
-}
-
 .map-couche-option--desactive {
   opacity: 0.4;
   cursor: not-allowed;

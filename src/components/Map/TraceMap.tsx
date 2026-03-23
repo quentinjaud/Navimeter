@@ -12,7 +12,7 @@ import type { StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Layers, Map as MapIcon, Satellite, Ship, Plus, Minus, Compass, Gauge, Clock, MapPin, Check } from "lucide-react";
+import { Layers, Map as MapIcon, Satellite, Ship, Plus, Minus, Compass, Wind, Gauge, Clock, MapPin } from "lucide-react";
 import EchelleCarte from "./EchelleCarte";
 import { trouverCelluleActive } from "@/lib/geo/stats-vent";
 import type { PointCarte, CelluleMeteoClient, StatsVent, DonneeGraphee } from "@/lib/types";
@@ -414,33 +414,40 @@ export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointAc
         )}
       </MapGL>
 
-      {/* Contrôles carte — boutons ronds en haut à droite */}
+      {/* Contrôles carte — en haut à droite */}
       <div className="map-couches-btns">
-        <button
-          className="map-couche-btn"
-          onClick={() => mapRef.current?.getMap().zoomIn()}
-          title="Zoom avant"
-        >
-          <Plus style={{ width: 14, height: 14 }} />
-        </button>
-        <button
-          className="map-couche-btn"
-          onClick={() => mapRef.current?.getMap().zoomOut()}
-          title="Zoom arrière"
-        >
-          <Minus style={{ width: 14, height: 14 }} />
-        </button>
+        {/* Zoom +/- en pill */}
+        <div className="map-zoom-pill">
+          <button
+            className="map-zoom-btn"
+            onClick={() => mapRef.current?.getMap().zoomIn()}
+            title="Zoom avant"
+          >
+            <Plus style={{ width: 14, height: 14 }} />
+          </button>
+          <button
+            className="map-zoom-btn"
+            onClick={() => mapRef.current?.getMap().zoomOut()}
+            title="Zoom arriere"
+          >
+            <Minus style={{ width: 14, height: 14 }} />
+          </button>
+        </div>
+
+        <div className="map-couche-spacer" />
+
+        {/* Orientation — selecteur style couches */}
         <div style={{ position: "relative" }}>
           <button
-            className={`map-couche-btn${modeOrientation === "vent" ? " map-couche-btn--actif" : ""}`}
+            className={`map-couche-btn map-couche-btn--layers${modeOrientation === "vent" ? " map-couche-btn--actif" : ""}`}
             onClick={() => setPopoverBoussole((o) => !o)}
             title="Orientation de la carte"
           >
-            <Compass style={{ width: 14, height: 14 }} />
+            <Compass style={{ width: 16, height: 16 }} />
           </button>
 
           {popoverBoussole && (
-            <div className="popover-boussole">
+            <div className="map-couches-panneau">
               <button
                 className={`map-couche-option${modeOrientation === "nord" ? " active" : ""}`}
                 onClick={() => {
@@ -449,8 +456,7 @@ export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointAc
                   setPopoverBoussole(false);
                 }}
               >
-                {modeOrientation === "nord" && <Check style={{ width: 12, height: 12 }} />}
-                {modeOrientation !== "nord" && <span style={{ width: 12, display: "inline-block" }} />}
+                <Compass style={{ width: 16, height: 16 }} />
                 Nord
               </button>
               <button
@@ -465,10 +471,9 @@ export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointAc
                   setPopoverBoussole(false);
                 }}
                 disabled={!statsVent}
-                title={!statsVent ? "Aucune donnée météo disponible" : "Orienter la carte face au vent"}
+                title={!statsVent ? "Aucune donnee meteo disponible" : "Orienter la carte face au vent"}
               >
-                {modeOrientation === "vent" && <Check style={{ width: 12, height: 12 }} />}
-                {modeOrientation !== "vent" && <span style={{ width: 12, display: "inline-block" }} />}
+                <Wind style={{ width: 16, height: 16 }} />
                 Vent archive
               </button>
             </div>
@@ -477,6 +482,7 @@ export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointAc
 
         <div className="map-couche-spacer" />
 
+        {/* Couches — selecteur existant */}
         <button
           className="map-couche-btn map-couche-btn--layers"
           onClick={() => setPanneauCouchesOuvert((o) => !o)}
