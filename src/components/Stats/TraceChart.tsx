@@ -586,24 +586,16 @@ export default function TraceChart({
         >
           <div className="chart-tooltip-compact">
             <span className="chart-tooltip-heure">{tooltipActif.heure}</span>
-            {modeTWA ? (
-              <>
-                <span className="chart-tooltip-val">
-                  <IconeTWA size={11} />
-                  {" "}{tooltipActif.twa != null ? `${Math.abs(Math.round(tooltipActif.twa))}° ${bordTWA(tooltipActif.twa)}` : "—"}
-                </span>
-                <span className="chart-tooltip-val"><Gauge size={11} /> {tooltipActif.vitesse != null ? `${tooltipActif.vitesse.toFixed(1)} kn` : "—"}</span>
-              </>
-            ) : modeVent ? (
-              <>
-                <span className="chart-tooltip-val"><Wind size={11} /> {tooltipActif.force ?? "—"} kn</span>
-                <span className="chart-tooltip-val"><Navigation2 size={11} /> {tooltipActif.dir ?? "—"}°</span>
-              </>
-            ) : (
-              <>
-                <span className="chart-tooltip-val"><Gauge size={11} /> {tooltipActif.vitesse != null ? `${tooltipActif.vitesse.toFixed(1)} kn` : "—"}</span>
-                <span className="chart-tooltip-val"><Compass size={11} /> {tooltipActif.cap != null ? `${Math.round(tooltipActif.cap)}°` : "—"}</span>
-              </>
+            <span className="chart-tooltip-val" style={donnee === "vitesse" ? { fontWeight: 600 } : undefined}>
+              <Gauge size={11} /> {tooltipActif.vitesse != null ? `${tooltipActif.vitesse.toFixed(1)} kn` : "—"}
+            </span>
+            <span className="chart-tooltip-val" style={donnee === "cap" ? { fontWeight: 600 } : undefined}>
+              <Compass size={11} /> {tooltipActif.cap != null ? `${Math.round(tooltipActif.cap)}°` : "—"}
+            </span>
+            {tooltipActif.twa != null && (
+              <span className="chart-tooltip-val" style={donnee === "twa" ? { fontWeight: 600 } : undefined}>
+                <IconeTWA size={11} /> {Math.abs(Math.round(tooltipActif.twa))}° {bordTWA(tooltipActif.twa)}
+              </span>
             )}
           </div>
         </div>

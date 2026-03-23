@@ -1904,7 +1904,7 @@ body:has(.trace-vue-layout) .app-main {
 
 .chart-tooltip-val {
   color: white;
-  font-weight: 600;
+  font-weight: 400;
   display: flex;
   align-items: center;
   gap: 3px;
