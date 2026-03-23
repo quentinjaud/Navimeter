@@ -37,3 +37,35 @@ La ROADMAP prevoit deja :
 - `LogEntry[]`, `Leg[]`, `Maneuver[]`
 
 Cette reflexion affine en distinguant clairement les 3 types et leurs modes d'affichage.
+
+---
+
+## Philosophie UI : la carte au centre de tout
+
+La carte n'est pas un outil secondaire — c'est l'identite visuelle de Sillage.
+Fond cartographique present partout, meme en arriere-plan decoratif.
+
+### Par page
+
+| Page | Carte |
+|------|-------|
+| Accueil / Dashboard | Fond carto desature avec traces recentes |
+| Navigateur journal (liste dossiers/aventures) | Fond carto ou mini-cartes par entree |
+| Navigation — mode journal | Carte active, entrees positionnees dessus |
+| Navigation — mode perf | Carte active, trace + curseur synchronise |
+| Regate — perf comparee | Carte active, N traces superposees |
+| Settings utilisateur | **Pas de carte** (seule exception) |
+
+### Journal + carte : pistes de design
+
+- **Split view** : timeline/entrees a gauche, carte a droite qui suit le curseur temporel
+- **Entrees geoloc** : LogEntry affichees comme markers sur la trace, click = detail
+- **Mode recit cartographie** : lecture lineaire ou la carte zoome/pan automatiquement au fil du scroll
+- **Scroll-driven** : on scrolle le journal → la carte suit. Ou on navigue la carte → les entrees apparaissent
+
+### Fond carto decoratif (accueil, navigateur)
+
+- Tuiles OSM raster desaturees, teintees creme pour coller a la charte
+- Traces de l'utilisateur rendues en overlay (polylineSimplifiee suffisante)
+- Pas d'interactivite lourde — juste du visuel ambiant
+- Option : MapLibre statique ou meme image pre-rendue pour la perf
