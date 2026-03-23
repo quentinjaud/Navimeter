@@ -484,7 +484,6 @@ export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointAc
           )}
         </div>
 
-        <div className="map-couche-spacer" />
 
         {/* Couches — selecteur existant */}
         <div style={{ position: "relative" }}>
@@ -526,10 +525,6 @@ export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointAc
           </div>
         )}
         </div>
-      </div>
-
-      {/* Zoom + echelle — bas gauche */}
-      <div className="map-bas-gauche">
         <div className="map-zoom-pill">
           <button
             className="map-zoom-btn"
@@ -546,6 +541,10 @@ export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointAc
             <Minus style={{ width: 14, height: 14 }} />
           </button>
         </div>
+      </div>
+
+      {/* Echelle — bas gauche */}
+      <div className="map-bas-gauche">
         <EchelleCarte mapRef={mapRef} />
       </div>
     </div>

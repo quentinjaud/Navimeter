@@ -99,11 +99,6 @@ export default async function NavigationDetailPage({ params }: PropsPage) {
 
   return (
     <div className="trace-vue-layout">
-      <Link href="/journal" className="navigation-retour" title="Retour au journal">
-        <ArrowLeft style={{ width: 16, height: 16 }} />
-        Journal
-      </Link>
-
       {trace && trace.points.length > 0 ? (
         <NavigationVueClient
           navigationId={navigation.id}

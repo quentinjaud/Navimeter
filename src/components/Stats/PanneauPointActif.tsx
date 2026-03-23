@@ -20,9 +20,10 @@ function formaterCoordonnee(decimal: number, positif: string, negatif: string): 
   const signe = decimal >= 0 ? positif : negatif;
   const abs = Math.abs(decimal);
   const deg = Math.floor(abs);
-  const minDecimal = (abs - deg) * 60;
-  const min = Math.floor(minDecimal);
-  const milliemes = Math.round((minDecimal - min) * 1000);
+  let minDecimal = (abs - deg) * 60;
+  let min = Math.floor(minDecimal);
+  let milliemes = Math.round((minDecimal - min) * 1000);
+  if (milliemes >= 1000) { milliemes = 0; min++; }
   return `${deg}°${String(min).padStart(2, "0")}'${String(milliemes).padStart(3, "0")}${signe}`;
 }
 
@@ -56,7 +57,7 @@ export default function PanneauPointActif({
         data-label="VIT"
       >
         <Gauge className="point-actif-pill-icon" />
-        {pointActif.speedKn != null ? pointActif.speedKn.toFixed(1) : "—"} kn
+        {pointActif.speedKn != null ? pointActif.speedKn.toFixed(1).padStart(4, "\u2007") : "\u2007\u2014\u2007"} kn
       </button>
 
       {/* Cap — cliquable pour switch */}
@@ -68,7 +69,7 @@ export default function PanneauPointActif({
         data-label="CAP"
       >
         <Compass className="point-actif-pill-icon" />
-        {pointActif.headingDeg != null ? `${Math.round(pointActif.headingDeg)}°` : "—"}
+        {pointActif.headingDeg != null ? `${String(Math.round(pointActif.headingDeg)).padStart(3, "\u2007")}°` : "\u2007\u2014\u2007"}
       </button>
 
       {/* TWA — visible seulement si cap + vent dispo */}
@@ -81,9 +82,9 @@ export default function PanneauPointActif({
         >
           <IconeTWA className="point-actif-pill-icon" />
           {(() => {
-            if (pointActif.headingDeg == null) return "—";
+            if (pointActif.headingDeg == null) return "\u2007\u2014\u2007";
             const twa = calculerTWA(pointActif.headingDeg, celluleActive.ventDirectionDeg);
-            return `${Math.abs(Math.round(twa))}° ${bordTWA(twa)}`;
+            return `${String(Math.abs(Math.round(twa))).padStart(3, "\u2007")}° ${bordTWA(twa)}`;
           })()}
         </button>
       )}

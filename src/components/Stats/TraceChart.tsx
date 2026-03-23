@@ -588,17 +588,34 @@ export default function TraceChart({
           style={{ left: px, transform: `translateX(${translateX}%)` }}
         >
           <div className="chart-tooltip-compact">
-            <span className="chart-tooltip-heure">{tooltipActif.heure}</span>
-            <span className="chart-tooltip-val" style={donnee === "vitesse" ? { fontWeight: 600 } : undefined}>
-              <Gauge size={11} /> {tooltipActif.vitesse != null ? `${tooltipActif.vitesse.toFixed(1)} kn` : "—"}
-            </span>
-            <span className="chart-tooltip-val" style={donnee === "cap" ? { fontWeight: 600 } : undefined}>
-              <Compass size={11} /> {tooltipActif.cap != null ? `${Math.round(tooltipActif.cap)}°` : "—"}
-            </span>
-            {tooltipActif.twa != null && (
-              <span className="chart-tooltip-val" style={donnee === "twa" ? { fontWeight: 600 } : undefined}>
-                <IconeTWA size={11} /> {Math.abs(Math.round(tooltipActif.twa))}° {bordTWA(tooltipActif.twa)}
-              </span>
+            {!compact && <span className="chart-tooltip-heure">{tooltipActif.heure}</span>}
+            {compact ? (
+              <>
+                {tooltipActif.force != null && (
+                  <span className="chart-tooltip-val" style={donnee === "vent" ? { fontWeight: 600 } : undefined}>
+                    <Wind size={11} /> {tooltipActif.force} kn
+                  </span>
+                )}
+                {tooltipActif.dir != null && (
+                  <span className="chart-tooltip-val" style={donnee === "ventDirection" ? { fontWeight: 600 } : undefined}>
+                    <Navigation2 size={11} /> {tooltipActif.dir}°
+                  </span>
+                )}
+              </>
+            ) : (
+              <>
+                <span className="chart-tooltip-val" style={donnee === "vitesse" ? { fontWeight: 600 } : undefined}>
+                  <Gauge size={11} /> {tooltipActif.vitesse != null ? `${tooltipActif.vitesse.toFixed(1).padStart(4, "\u2007")} kn` : "\u2007\u2014\u2007"}
+                </span>
+                <span className="chart-tooltip-val" style={donnee === "cap" ? { fontWeight: 600 } : undefined}>
+                  <Compass size={11} /> {tooltipActif.cap != null ? `${String(Math.round(tooltipActif.cap)).padStart(3, "\u2007")}°` : "\u2007\u2014\u2007"}
+                </span>
+                {tooltipActif.twa != null && (
+                  <span className="chart-tooltip-val" style={donnee === "twa" ? { fontWeight: 600 } : undefined}>
+                    <IconeTWA size={11} /> {String(Math.abs(Math.round(tooltipActif.twa))).padStart(3, "\u2007")}° {bordTWA(tooltipActif.twa)}
+                  </span>
+                )}
+              </>
             )}
           </div>
         </div>
