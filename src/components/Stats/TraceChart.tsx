@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { format } from "date-fns";
 import { COULEURS } from "@/lib/theme";
+import { Gauge, Compass, Wind, Navigation2 } from "lucide-react";
 import {
   calculerStatsVitesse,
   vitesseVersCouleur,
@@ -456,8 +457,8 @@ export default function TraceChart({
                 return (
                   <div className="chart-tooltip-compact">
                     <span className="chart-tooltip-heure">{heure}</span>
-                    <span className="chart-tooltip-val" title="Force du vent">💨 {force}</span>
-                    <span className="chart-tooltip-val" title="Direction du vent">🧭 {dir}</span>
+                    <span className="chart-tooltip-val" title="Force du vent"><Wind size={11} /> {force}</span>
+                    <span className="chart-tooltip-val" title="Direction du vent"><Navigation2 size={11} /> {dir}</span>
                   </div>
                 );
               }
@@ -471,8 +472,8 @@ export default function TraceChart({
               return (
                 <div className="chart-tooltip-compact">
                   <span className="chart-tooltip-heure">{heure}</span>
-                  <span className="chart-tooltip-val" title="Vitesse">⛵ {vitesse}</span>
-                  <span className="chart-tooltip-val" title="Cap">🧭 {cap}</span>
+                  <span className="chart-tooltip-val" title="Vitesse"><Gauge size={11} /> {vitesse}</span>
+                  <span className="chart-tooltip-val" title="Cap"><Compass size={11} /> {cap}</span>
                 </div>
               );
             }}
