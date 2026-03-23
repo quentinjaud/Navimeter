@@ -7,7 +7,7 @@ import TraceChart from "@/components/Stats/TraceChart";
 import PanneauStats from "@/components/Stats/PanneauStats";
 import PanneauPointActif from "@/components/Stats/PanneauPointActif";
 import GraphiqueRedimensionnable from "@/components/Stats/GraphiqueRedimensionnable";
-import type { PointCarte } from "@/lib/types";
+import type { PointCarte, CelluleMeteoClient, StatsVent } from "@/lib/types";
 import { useEtatVue, HAUTEUR_GRAPHIQUE_INITIALE } from "@/lib/hooks/useEtatVue";
 
 interface PropsNavigationVueClient {
@@ -23,6 +23,11 @@ interface PropsNavigationVueClient {
   durationSeconds: number | null;
   avgSpeedKn: number | null;
   maxSpeedKn: number | null;
+  traceId?: string;
+  cellulesMeteo?: CelluleMeteoClient[];
+  statsVent?: StatsVent | null;
+  traceTimestamps?: boolean;
+  traceTropRecente?: boolean;
 }
 
 export default function NavigationVueClient({
@@ -38,6 +43,11 @@ export default function NavigationVueClient({
   durationSeconds,
   avgSpeedKn,
   maxSpeedKn,
+  traceId,
+  cellulesMeteo,
+  statsVent,
+  traceTimestamps,
+  traceTropRecente,
 }: PropsNavigationVueClient) {
   const router = useRouter();
   const {
@@ -62,6 +72,10 @@ export default function NavigationVueClient({
     setNomEdite(nom);
     setDateEditee(date.slice(0, 10));
   }, [nom, date]);
+
+  // Etat meteo — peut etre mis a jour apres un fetch
+  const [cellulesMeteoState, setCellulesMeteoState] = useState(cellulesMeteo ?? []);
+  const [statsVentState, setStatsVentState] = useState(statsVent ?? null);
 
   // Sauvegarde generique d'un champ via PATCH
   const sauvegarderChamp = useCallback(
@@ -108,6 +122,24 @@ export default function NavigationVueClient({
     },
     [date, sauvegarderChamp]
   );
+
+  const handleMeteoChargee = useCallback(
+    (data: { statsVent: StatsVent; cellules: CelluleMeteoClient[] }) => {
+      setStatsVentState(data.statsVent);
+      setCellulesMeteoState(data.cellules);
+    },
+    []
+  );
+
+  const handleMeteoSupprimee = useCallback(() => {
+    setStatsVentState(null);
+    setCellulesMeteoState([]);
+    if (donneeGraphee === "vent") setDonneeGraphee("vitesse");
+  }, [donneeGraphee, setDonneeGraphee]);
+
+  const handleClickRoseDesVents = useCallback(() => {
+    setDonneeGraphee(donneeGraphee === "vent" ? "vitesse" : "vent");
+  }, [donneeGraphee, setDonneeGraphee]);
 
   return (
     <div style={{ "--hauteur-graphique": `${paddingBas}px` } as React.CSSProperties}>
@@ -172,6 +204,12 @@ export default function NavigationVueClient({
           durationSeconds={durationSeconds}
           avgSpeedKn={avgSpeedKn}
           maxSpeedKn={maxSpeedKn}
+          traceId={traceId}
+          statsVent={statsVentState}
+          traceTimestamps={traceTimestamps}
+          traceTropRecente={traceTropRecente}
+          onMeteoChargee={handleMeteoChargee}
+          onMeteoSupprimee={handleMeteoSupprimee}
         />
       </div>
 
@@ -194,6 +232,10 @@ export default function NavigationVueClient({
           pointActifIndex={pointActifIndex}
           onHoverPoint={handleHoverPoint}
           onClickPoint={handleClickPoint}
+          cellulesMeteo={cellulesMeteoState}
+          statsVent={statsVentState}
+          donneeGraphee={donneeGraphee}
+          onClickRoseDesVents={handleClickRoseDesVents}
         />
       </div>
 
@@ -212,6 +254,7 @@ export default function NavigationVueClient({
             pointFixeIndex={pointFixeIndex}
             onHoverPoint={handleHoverPoint}
             onClickPoint={handleClickPoint}
+            cellulesMeteo={cellulesMeteoState}
           />
         </GraphiqueRedimensionnable>
       </div>

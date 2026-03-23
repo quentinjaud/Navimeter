@@ -14,7 +14,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Layers, Map as MapIcon, Satellite, Ship, Plus, Minus, Compass, Gauge, Clock, MapPin } from "lucide-react";
 import EchelleCarte from "./EchelleCarte";
-import type { PointCarte } from "@/lib/types";
+import type { PointCarte, CelluleMeteoClient, StatsVent, DonneeGraphee } from "@/lib/types";
 
 interface PropsCarteTrace {
   points: PointCarte[];
@@ -23,6 +23,11 @@ interface PropsCarteTrace {
   pointActifIndex?: number | null;
   onHoverPoint?: (pointIndex: number | null) => void;
   onClickPoint?: (pointIndex: number) => void;
+  // Props meteo — sera utilisee dans une future tache
+  cellulesMeteo?: CelluleMeteoClient[];
+  statsVent?: StatsVent | null;
+  donneeGraphee?: DonneeGraphee;
+  onClickRoseDesVents?: () => void;
 }
 
 import {

@@ -17,7 +17,7 @@ import {
   calculerStatsVitesse,
   vitesseVersCouleur,
 } from "@/lib/geo/couleur-vitesse";
-import type { PointCarte, DonneeGraphee } from "@/lib/types";
+import type { PointCarte, DonneeGraphee, CelluleMeteoClient } from "@/lib/types";
 import { sousechantillonner } from "@/lib/utilitaires";
 
 interface PropsTraceChart {
@@ -27,10 +27,11 @@ interface PropsTraceChart {
   pointFixeIndex: number | null;
   onHoverPoint: (pointIndex: number | null) => void;
   onClickPoint?: (pointIndex: number | null) => void;
+  cellulesMeteo?: CelluleMeteoClient[];
 }
 
 const CONFIG_DONNEES: Record<
-  DonneeGraphee,
+  Exclude<DonneeGraphee, "vent">,
   {
     titre: string;
     cle: keyof PointCarte;
@@ -71,8 +72,12 @@ export default function TraceChart({
   pointFixeIndex,
   onHoverPoint,
   onClickPoint,
+  cellulesMeteo: _cellulesMeteo,
 }: PropsTraceChart) {
-  const config = CONFIG_DONNEES[donnee];
+  // "vent" sera rendu dans une future tache — repli sur vitesse si necessaire
+  const donneeEffective: Exclude<DonneeGraphee, "vent"> =
+    donnee === "vent" ? "vitesse" : donnee;
+  const config = CONFIG_DONNEES[donneeEffective];
   const conteneurRef = useRef<HTMLDivElement>(null);
 
   // Mesure la position reelle de l'axe X via le DOM Recharts
@@ -98,7 +103,7 @@ export default function TraceChart({
           })),
         500
       ),
-    [points, donnee]
+    [points, donneeEffective]
   );
 
   useEffect(() => {
