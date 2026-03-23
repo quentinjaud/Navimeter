@@ -1428,6 +1428,102 @@ body:has(.trace-vue-layout) .app-main {
   margin-left: 2px;
 }
 
+/* Stats vent — bloc meteo dans PanneauStats */
+.stats-vent-bloc {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.stats-vent-separateur {
+  height: 1px;
+  background: var(--border-light);
+  margin: 6px 0 4px;
+}
+
+.stats-vent-source {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 9px;
+  color: var(--text-secondary);
+}
+
+.stats-vent-supprimer {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 9px;
+  font-family: inherit;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.stats-vent-supprimer:hover {
+  color: #d32f2f;
+}
+
+/* Bouton enrichissement meteo */
+.stats-meteo-enrichir {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.stats-enrichir-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  padding: 6px 10px;
+  min-height: 44px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.stats-enrichir-btn:hover:not(:disabled) {
+  background: var(--accent-dark, #d4a200);
+}
+
+.stats-enrichir-btn--desactive {
+  background: var(--border-light);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+.stats-enrichir-btn--chargement {
+  background: var(--border-light);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+.stats-enrichir-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.stats-enrichir-erreur {
+  font-size: 10px;
+  color: #d32f2f;
+  line-height: 1.3;
+}
+
 /* Panneau point actif — pills fond noir, centre en haut */
 .trace-vue-point-actif {
   position: absolute;
