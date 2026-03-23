@@ -28,10 +28,11 @@ interface PropsTraceChart {
   onHoverPoint: (pointIndex: number | null) => void;
   onClickPoint?: (pointIndex: number | null) => void;
   cellulesMeteo?: CelluleMeteoClient[];
+  compact?: boolean;
 }
 
 const CONFIG_DONNEES: Record<
-  Exclude<DonneeGraphee, "vent">,
+  Exclude<DonneeGraphee, "vent" | "ventDirection">,
   {
     titre: string;
     cle: keyof PointCarte;
@@ -71,6 +72,13 @@ const CONFIG_VENT = {
   formater: (v: number) => `${v.toFixed(1)} kn`,
 };
 
+const CONFIG_VENT_DIR = {
+  titre: "Direction vent",
+  unite: "°",
+  formater: (v: number) => `${Math.round(v)}°`,
+  domaine: [0, 360] as [number, number],
+};
+
 export default function TraceChart({
   points,
   donnee,
@@ -79,13 +87,15 @@ export default function TraceChart({
   onHoverPoint,
   onClickPoint,
   cellulesMeteo,
+  compact,
 }: PropsTraceChart) {
-  // Mode vent actif si donnee === "vent" ET des cellules sont disponibles
-  const modeVent = donnee === "vent" && (cellulesMeteo?.length ?? 0) > 0;
+  // Mode vent actif si donnee === "vent" ou "ventDirection" ET des cellules sont disponibles
+  const modeVent = (donnee === "vent" || donnee === "ventDirection") && (cellulesMeteo?.length ?? 0) > 0;
+  const modeVentDirection = donnee === "ventDirection" && (cellulesMeteo?.length ?? 0) > 0;
 
   // Pour les modes vitesse/cap, repli sur vitesse si vent sans cellules
-  const donneeEffective: Exclude<DonneeGraphee, "vent"> =
-    donnee === "vent" ? "vitesse" : donnee;
+  const donneeEffective: Exclude<DonneeGraphee, "vent" | "ventDirection"> =
+    (donnee === "vent" || donnee === "ventDirection") ? "vitesse" : donnee;
   const config = CONFIG_DONNEES[donneeEffective];
   const conteneurRef = useRef<HTMLDivElement>(null);
 
@@ -115,28 +125,69 @@ export default function TraceChart({
     [points, donneeEffective]
   );
 
-  // Dataset vent : un point par heure, centre de l'intervalle, moyenne si plusieurs cellules
-  const donneesVent = useMemo((): DonneeGraphique[] => {
-    if (!cellulesMeteo || cellulesMeteo.length === 0) return [];
-    // Regrouper par timestamp central
-    const parTimestamp = new Map<number, number[]>();
-    for (const cellule of cellulesMeteo) {
-      const debut = new Date(cellule.dateDebut).getTime();
-      const fin = new Date(cellule.dateFin).getTime();
-      const centre = Math.round((debut + fin) / 2);
-      const existantes = parTimestamp.get(centre) ?? [];
-      existantes.push(cellule.ventVitesseKn);
-      parTimestamp.set(centre, existantes);
-    }
-    return Array.from(parTimestamp.entries())
-      .map(([temps, vitesses], i) => ({
-        temps,
-        heure: new Date(temps).toISOString(),
-        valeur: vitesses.reduce((a, b) => a + b, 0) / vitesses.length,
-        pointIndex: i,
-      }))
-      .sort((a, b) => a.temps - b.temps);
-  }, [cellulesMeteo]);
+  // Interpoler une valeur vent sur un timestamp GPS a partir des cellules meteo
+  // Pour chaque point GPS, trouve la cellule correspondante (ou interpole entre deux)
+  const interpolerVentSurPoints = useCallback(
+    (champ: "ventVitesseKn" | "ventDirectionDeg"): DonneeGraphique[] => {
+      if (!cellulesMeteo || cellulesMeteo.length === 0) return [];
+
+      // Construire une timeline triee des valeurs vent (centre de chaque heure, dedup)
+      const timeline: { temps: number; valeur: number }[] = [];
+      const vus = new Set<number>();
+      for (const c of cellulesMeteo) {
+        const centre = Math.round(
+          (new Date(c.dateDebut).getTime() + new Date(c.dateFin).getTime()) / 2
+        );
+        if (!vus.has(centre)) {
+          vus.add(centre);
+          timeline.push({ temps: centre, valeur: c[champ] });
+        }
+      }
+      timeline.sort((a, b) => a.temps - b.temps);
+
+      if (timeline.length === 0) return [];
+
+      // Projeter chaque point GPS sur la timeline vent par interpolation lineaire
+      return sousechantillonner(
+        points
+          .filter((p) => p.timestamp != null)
+          .map((p, i) => {
+            const t = new Date(p.timestamp!).getTime();
+
+            // Avant le premier ou apres le dernier : valeur constante
+            if (t <= timeline[0].temps) {
+              return { temps: t, heure: p.timestamp!, valeur: timeline[0].valeur, pointIndex: p.pointIndex ?? i };
+            }
+            if (t >= timeline[timeline.length - 1].temps) {
+              return { temps: t, heure: p.timestamp!, valeur: timeline[timeline.length - 1].valeur, pointIndex: p.pointIndex ?? i };
+            }
+
+            // Trouver les deux points encadrants et interpoler
+            let j = 0;
+            while (j < timeline.length - 1 && timeline[j + 1].temps < t) j++;
+            const a = timeline[j];
+            const b = timeline[j + 1];
+            const ratio = (t - a.temps) / (b.temps - a.temps);
+            const valeur = a.valeur + ratio * (b.valeur - a.valeur);
+
+            return { temps: t, heure: p.timestamp!, valeur, pointIndex: p.pointIndex ?? i };
+          }),
+        500
+      );
+    },
+    [cellulesMeteo, points]
+  );
+
+  // Datasets vent interpoles sur les points GPS (meme timeline que vitesse/cap)
+  const donneesVent = useMemo(
+    () => interpolerVentSurPoints("ventVitesseKn"),
+    [interpolerVentSurPoints]
+  );
+
+  const donneesVentDir = useMemo(
+    () => interpolerVentSurPoints("ventDirectionDeg"),
+    [interpolerVentSurPoints]
+  );
 
   useEffect(() => {
     const el = conteneurRef.current;
@@ -164,10 +215,10 @@ export default function TraceChart({
       clearTimeout(timer);
       resizeObs.disconnect();
     };
-  }, [donneesGraphique, donneesVent]);
+  }, [donneesGraphique, donneesVent, donneesVentDir]);
 
   // Dataset actif selon le mode
-  const donneesActives = modeVent ? donneesVent : donneesGraphique;
+  const donneesActives = modeVentDirection ? donneesVentDir : modeVent ? donneesVent : donneesGraphique;
 
   // Plage temporelle
   const { tempsDebut, duree } = useMemo(() => {
@@ -355,18 +406,21 @@ export default function TraceChart({
   const strokeId = "gradient-vitesse";
 
   // Titre et formateur selon le mode
-  const titreActif = modeVent ? CONFIG_VENT.titre : config.titre;
-  const formaterActif = modeVent ? CONFIG_VENT.formater : config.formater;
+  const configVentActif = modeVentDirection ? CONFIG_VENT_DIR : CONFIG_VENT;
+  const titreActif = modeVent ? configVentActif.titre : config.titre;
+  const formaterActif = modeVent ? configVentActif.formater : config.formater;
 
   return (
-    <div className="chart-container" ref={conteneurRef} onTouchStart={handleTouchChart}>
-      <h3 className="chart-title">{titreActif}</h3>
+    <div className={`chart-container${compact ? " chart-container--compact" : ""}`} ref={conteneurRef} onTouchStart={handleTouchChart}>
+      {!compact && <h3 className="chart-title">{titreActif}</h3>}
+      {compact && <span className="chart-title-compact">{titreActif}</span>}
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
           data={donneesActives}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
           onClick={onClickPoint ? handleClick : undefined}
+          margin={compact ? { top: 4, right: 4, bottom: 0, left: 0 } : undefined}
         >
           <CartesianGrid strokeDasharray="3 3" stroke={COULEURS.grille} />
           <XAxis
@@ -375,14 +429,15 @@ export default function TraceChart({
             scale="time"
             domain={["dataMin", "dataMax"]}
             tickFormatter={(t) => format(new Date(t), "HH:mm")}
-            tick={{ fontSize: 11, fill: "#aaa" }}
-            stroke="#ccc"
+            tick={compact ? false : { fontSize: 11, fill: "#aaa" }}
+            stroke={compact ? "transparent" : "#ccc"}
+            height={compact ? 0 : undefined}
           />
           <YAxis
             tick={{ fontSize: 10, fill: "#aaa" }}
             stroke="#ccc"
             width={25}
-            domain={modeVent ? undefined : config.domaine}
+            domain={modeVent ? (modeVentDirection ? CONFIG_VENT_DIR.domaine : undefined) : config.domaine}
           />
           <Tooltip
             labelFormatter={(t) =>

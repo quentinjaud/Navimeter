@@ -1,12 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import TraceMapWrapper from "@/components/Map/TraceMapWrapper";
 import TraceChart from "@/components/Stats/TraceChart";
 import PanneauStats from "@/components/Stats/PanneauStats";
 import PanneauPointActif from "@/components/Stats/PanneauPointActif";
 import GraphiqueRedimensionnable from "@/components/Stats/GraphiqueRedimensionnable";
+import RoseDesVents from "@/components/Map/RoseDesVents";
+import { trouverCelluleActive } from "@/lib/geo/stats-vent";
 import type { PointCarte, CelluleMeteoClient, StatsVent } from "@/lib/types";
 import { useEtatVue, HAUTEUR_GRAPHIQUE_INITIALE } from "@/lib/hooks/useEtatVue";
 
@@ -131,21 +133,37 @@ export default function NavigationVueClient({
     []
   );
 
+  const [ventDeploye, setVentDeploye] = useState(false);
+  const [statsReduit, setStatsReduit] = useState(false);
+  const [donneeVentDeployee, setDonneeVentDeployee] = useState<"vent" | "ventDirection">("vent");
+
   const handleMeteoSupprimee = useCallback(() => {
     setStatsVentState(null);
     setCellulesMeteoState([]);
-    if (donneeGraphee === "vent") setDonneeGraphee("vitesse");
-  }, [donneeGraphee, setDonneeGraphee]);
+    setVentDeploye(false);
+  }, []);
 
   const handleClickRoseDesVents = useCallback(() => {
-    setDonneeGraphee(donneeGraphee === "vent" ? "vitesse" : "vent");
-  }, [donneeGraphee, setDonneeGraphee]);
+    if (!ventDeploye) {
+      setVentDeploye(true);
+      setDonneeVentDeployee("vent");
+    } else if (donneeVentDeployee === "vent") {
+      setDonneeVentDeployee("ventDirection");
+    } else {
+      setVentDeploye(false);
+    }
+  }, [ventDeploye, donneeVentDeployee]);
+
+  const celluleActive = useMemo(() => {
+    if (!cellulesMeteoState.length || !pointActif) return null;
+    return trouverCelluleActive(cellulesMeteoState, pointActif.timestamp, pointActif.lat, pointActif.lon);
+  }, [cellulesMeteoState, pointActif]);
 
   return (
     <div style={{ "--hauteur-graphique": `${paddingBas}px` } as React.CSSProperties}>
       {/* Panneau stats + metadonnees navigation */}
       <div className="trace-vue-stats">
-        <div className="navigation-breadcrumb-flottant">
+        <div className="navigation-breadcrumb-flottant" style={statsReduit ? { display: "none" } : undefined}>
           {breadcrumb}
         </div>
         <div className="navigation-meta">
@@ -176,7 +194,7 @@ export default function NavigationVueClient({
               {nom}
             </h2>
           )}
-          <div className="navigation-meta-details">
+          <div className="navigation-meta-details" style={statsReduit ? { display: "none" } : undefined}>
             <input
               type="date"
               className="navigation-date-input"
@@ -210,6 +228,7 @@ export default function NavigationVueClient({
           traceTropRecente={traceTropRecente}
           onMeteoChargee={handleMeteoChargee}
           onMeteoSupprimee={handleMeteoSupprimee}
+          onReduitChange={setStatsReduit}
         />
       </div>
 
@@ -230,14 +249,58 @@ export default function NavigationVueClient({
           maxSpeed={maxSpeed}
           paddingBottom={paddingBas}
           pointActifIndex={pointActifIndex}
+          pointFixeIndex={pointFixeIndex}
           onHoverPoint={handleHoverPoint}
           onClickPoint={handleClickPoint}
           cellulesMeteo={cellulesMeteoState}
           statsVent={statsVentState}
           donneeGraphee={donneeGraphee}
+          ventDeploye={ventDeploye}
+          donneeVentDeployee={donneeVentDeployee}
           onClickRoseDesVents={handleClickRoseDesVents}
         />
       </div>
+
+      {statsVentState && (
+        <div className="trace-vue-vent">
+          {ventDeploye ? (
+            <>
+              <div className="hud-vent-deploye">
+                <span className="hud-vent-deploye-titre">
+                  {donneeVentDeployee === "vent" ? "Vent (kn)" : "Direction vent (°)"}
+                </span>
+                <div className="hud-vent-deploye-graphique">
+                  <TraceChart
+                    points={points}
+                    donnee={donneeVentDeployee}
+                    pointActifIndex={pointActifIndex}
+                    pointFixeIndex={pointFixeIndex}
+                    onHoverPoint={handleHoverPoint}
+                    onClickPoint={handleClickPoint}
+                    cellulesMeteo={cellulesMeteoState}
+                    compact
+                  />
+                </div>
+              </div>
+              <RoseDesVents
+                celluleActive={celluleActive}
+                statsVent={statsVentState}
+                ventDeploye={ventDeploye}
+                donneeVentDeployee={donneeVentDeployee}
+                onClick={handleClickRoseDesVents}
+              />
+            </>
+          ) : (
+            <RoseDesVents
+              celluleActive={celluleActive}
+              statsVent={statsVentState}
+              ventDeploye={ventDeploye}
+              donneeVentDeployee={donneeVentDeployee}
+              onClick={handleClickRoseDesVents}
+            />
+          )}
+        </div>
+      )}
 
       {/* Graphique + timeline */}
       <div className="trace-vue-graphique">
@@ -258,6 +321,7 @@ export default function NavigationVueClient({
           />
         </GraphiqueRedimensionnable>
       </div>
+
     </div>
   );
 }

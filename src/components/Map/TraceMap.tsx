@@ -14,7 +14,6 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Layers, Map as MapIcon, Satellite, Ship, Plus, Minus, Compass, Gauge, Clock, MapPin, Check } from "lucide-react";
 import EchelleCarte from "./EchelleCarte";
-import RoseDesVents from "./RoseDesVents";
 import { trouverCelluleActive } from "@/lib/geo/stats-vent";
 import type { PointCarte, CelluleMeteoClient, StatsVent, DonneeGraphee } from "@/lib/types";
 
@@ -23,12 +22,14 @@ interface PropsCarteTrace {
   maxSpeed: number;
   paddingBottom?: number;
   pointActifIndex?: number | null;
+  pointFixeIndex?: number | null;
   onHoverPoint?: (pointIndex: number | null) => void;
   onClickPoint?: (pointIndex: number) => void;
-  // Props meteo — sera utilisee dans une future tache
   cellulesMeteo?: CelluleMeteoClient[];
   statsVent?: StatsVent | null;
   donneeGraphee?: DonneeGraphee;
+  ventDeploye?: boolean;
+  donneeVentDeployee?: "vent" | "ventDirection";
   onClickRoseDesVents?: () => void;
 }
 
@@ -105,7 +106,7 @@ function formaterCoord(decimal: number, positif: string, negatif: string): strin
   return `${deg}°${String(min).padStart(2, "0")}'${String(milliemes).padStart(3, "0")}${signe}`;
 }
 
-export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointActifIndex, onHoverPoint, onClickPoint, cellulesMeteo, statsVent, donneeGraphee, onClickRoseDesVents }: PropsCarteTrace) {
+export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointActifIndex, pointFixeIndex, onHoverPoint, onClickPoint, cellulesMeteo, statsVent, donneeGraphee, ventDeploye, donneeVentDeployee, onClickRoseDesVents }: PropsCarteTrace) {
   const mapRef = useRef<MapRef>(null);
   const [fondCarte, setFondCarte] = useState<"osm" | "satellite">("osm");
   const [afficherSeaMap, setAfficherSeaMap] = useState(true);
@@ -514,15 +515,6 @@ export default function TraceMap({ points, maxSpeed, paddingBottom = 40, pointAc
           </div>
         )}
       </div>
-
-      {statsVent && (
-        <RoseDesVents
-          celluleActive={celluleActive}
-          statsVent={statsVent}
-          donneeGraphee={donneeGraphee ?? "vitesse"}
-          onClick={onClickRoseDesVents ?? (() => {})}
-        />
-      )}
 
       <EchelleCarte mapRef={mapRef} />
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Anchor, ArrowUpDown, Clock, Gauge, Loader2, Navigation, Wind } from "lucide-react";
+import { Anchor, ArrowUpDown, ChevronUp, ChevronDown, Clock, Gauge, Loader2, Navigation, Wind, Zap } from "lucide-react";
 import { useState } from "react";
 import { formaterDuree } from "@/lib/utilitaires";
 import type { CelluleMeteoClient, StatsVent } from "@/lib/types";
@@ -16,6 +16,7 @@ interface PropsPanneauStats {
   traceTropRecente?: boolean;
   onMeteoChargee?: (data: { statsVent: StatsVent; cellules: CelluleMeteoClient[] }) => void;
   onMeteoSupprimee?: () => void;
+  onReduitChange?: (reduit: boolean) => void;
 }
 
 function LigneStat({
@@ -60,7 +61,13 @@ export default function PanneauStats({
   traceTropRecente,
   onMeteoChargee,
   onMeteoSupprimee,
+  onReduitChange,
 }: PropsPanneauStats) {
+  const [reduit, setReduitLocal] = useState(false);
+  const setReduit = (v: boolean) => {
+    setReduitLocal(v);
+    onReduitChange?.(v);
+  };
   const [etat, setEtat] = useState<"idle" | "chargement" | "erreur">("idle");
   const [messageErreur, setMessageErreur] = useState<string | null>(null);
 
@@ -101,8 +108,63 @@ export default function PanneauStats({
     }
   }
 
+  const dirMoy = statsVent
+    ? `${Math.round(statsVent.directionMoyenneDeg / 5) * 5}° ${directionCardinale(statsVent.directionMoyenneDeg)}`
+    : null;
+
+  // Mode reduit : 2 lignes compactes
+  if (reduit) {
+    return (
+      <div className="panneau-stats-compact panneau-stats--reduit">
+        <div className="stats-ligne-reduite">
+          <span className="stats-val-reduite" title="Distance">
+            <Anchor size={12} />
+            {distanceNm?.toFixed(2) ?? "—"}<small>NM</small>
+          </span>
+          <span className="stats-val-reduite" title="Duree">
+            <Clock size={12} />
+            {durationSeconds ? formaterDuree(durationSeconds) : "—"}
+          </span>
+          <span className="stats-val-reduite" title="Vitesse moyenne">
+            <Gauge size={12} />
+            {avgSpeedKn?.toFixed(1) ?? "—"}<small>kn</small>
+          </span>
+        </div>
+        {statsVent && (
+          <div className="stats-ligne-reduite stats-ligne-reduite--vent">
+            <span className="stats-val-reduite" title="Vent moyen">
+              <Wind size={12} />
+              {Math.round(statsVent.ventMoyenKn)}<sup>{Math.round(statsVent.rafalesMaxKn)}</sup><small>kn</small>
+            </span>
+            <span className="stats-val-reduite stats-val-reduite--droite" title="Direction moyenne">
+              <Navigation size={12} />
+              {dirMoy}
+            </span>
+          </div>
+        )}
+        <button
+          className="stats-toggle"
+          onClick={() => setReduit(false)}
+          title="Deployer les statistiques"
+          type="button"
+        >
+          <ChevronDown size={14} />
+        </button>
+      </div>
+    );
+  }
+
+  // Mode deploye : toutes les stats
   return (
     <div className="panneau-stats-compact">
+      <button
+        className="stats-toggle"
+        onClick={() => setReduit(true)}
+        title="Reduire les statistiques"
+        type="button"
+      >
+        <ChevronUp size={14} />
+      </button>
       <LigneStat
         icon={Anchor}
         etiquette="Distance"
@@ -134,19 +196,19 @@ export default function PanneauStats({
           <LigneStat
             icon={Wind}
             etiquette="Vent moy."
-            valeur={statsVent.ventMoyenKn.toFixed(1)}
+            valeur={Math.round(statsVent.ventMoyenKn).toString()}
             unite="kn"
           />
           <LigneStat
-            icon={Wind}
+            icon={Zap}
             etiquette="Rafales"
-            valeur={statsVent.rafalesMaxKn.toFixed(1)}
+            valeur={Math.round(statsVent.rafalesMaxKn).toString()}
             unite="kn"
           />
           <LigneStat
             icon={Navigation}
             etiquette="Direction"
-            valeur={`${statsVent.directionMoyenneDeg}° ${directionCardinale(statsVent.directionMoyenneDeg)}`}
+            valeur={dirMoy!}
             unite=""
           />
           <LigneStat
@@ -156,7 +218,7 @@ export default function PanneauStats({
             unite="°"
           />
           <div className="stats-vent-source">
-            <span>Open-Meteo archive · 25km/1h</span>
+            <span>Open-Meteo archive</span>
             <button
               className="stats-vent-supprimer"
               onClick={supprimerMeteo}
@@ -203,7 +265,7 @@ export default function PanneauStats({
                 type="button"
               >
                 <Wind size={13} />
-                Enrichir meteo
+                Enrichir en recuperant les donnees meteo
               </button>
               {etat === "erreur" && messageErreur && (
                 <span className="stats-enrichir-erreur">{messageErreur}</span>
