@@ -87,26 +87,14 @@ body {
    LAYOUT
    ============================================= */
 
-/* === Bouton accueil (squiggle, top-left) === */
+/* === Bouton accueil (squiggle brut, top-left, mord sur les panels) === */
 .bouton-accueil {
   position: fixed;
-  top: 16px;
-  left: 16px;
+  top: 12px;
+  left: 12px;
   z-index: 40;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: rgba(255, 253, 249, 0.92);
-  backdrop-filter: blur(8px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  transition: box-shadow 0.15s;
-}
-
-.bouton-accueil:hover {
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  line-height: 0;
 }
 
 /* === Bouton user (rond, top-right) === */
@@ -2985,7 +2973,7 @@ body {
 /* Colonne de panneaux flottants empiles */
 .accueil-panneaux {
   position: fixed;
-  top: 72px;
+  top: 16px;
   left: 16px;
   z-index: 20;
   display: flex;
@@ -3014,14 +3002,15 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 10px 16px 10px 44px;
   border-bottom: 1px solid var(--border-light);
 }
 
 .accueil-panneau-titre {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   margin: 0;
+  color: var(--text-secondary);
 }
 
 .accueil-liste-dossiers {
@@ -3269,7 +3258,7 @@ body {
 /* === Barre meta nav (pills point-actif en haut de la carte) === */
 .barre-meta-nav {
   position: fixed;
-  top: 72px;
+  top: 16px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;

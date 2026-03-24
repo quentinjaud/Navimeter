@@ -5,7 +5,7 @@ import Link from "next/link";
 export function BoutonAccueil() {
   return (
     <Link href="/journal" className="bouton-accueil" title="Mes journaux de bord">
-      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <svg width="42" height="42" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <defs>
           <linearGradient id="sq-accueil" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="#43728B" />
