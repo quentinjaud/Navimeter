@@ -14,7 +14,7 @@ interface PropsArborescenceJournal {
   navActiveId: string | null;
   onClicNavigation: (nav: ResumeNavigation) => void;
   onCreerDossier: () => void;
-  onCreerNav: (dossierId: string) => void;
+  onCreerNav: (dossierId: string, parentNavId?: string) => void;
 }
 
 const COULEURS_TYPE: Record<string, string> = {
@@ -248,6 +248,7 @@ function NoeudDossier({
                   actif={nav.id === navActiveId}
                   navActiveId={navActiveId}
                   onClick={onClicNavigation}
+                  onCreerNav={onCreerNav}
                   profondeur={profondeur + 1}
                 />
               ))}
@@ -275,12 +276,14 @@ function NoeudNavigation({
   actif,
   navActiveId,
   onClick,
+  onCreerNav,
   profondeur,
 }: {
   nav: ResumeNavigation;
   actif: boolean;
   navActiveId: string | null;
   onClick: (nav: ResumeNavigation) => void;
+  onCreerNav: (dossierId: string, parentNavId?: string) => void;
   profondeur: number;
 }) {
   const [ouvert, setOuvert] = useState(false);
@@ -385,16 +388,26 @@ function NoeudNavigation({
               ...
             </div>
           ) : (
-            sousNavs?.map((sn) => (
-              <NoeudNavigation
-                key={sn.id}
-                nav={sn}
-                actif={sn.id === navActiveId}
-                navActiveId={navActiveId}
-                onClick={onClick}
-                profondeur={profondeur + 1}
-              />
-            ))
+            <>
+              {sousNavs?.map((sn) => (
+                <NoeudNavigation
+                  key={sn.id}
+                  nav={sn}
+                  actif={sn.id === navActiveId}
+                  navActiveId={navActiveId}
+                  onClick={onClick}
+                  onCreerNav={onCreerNav}
+                  profondeur={profondeur + 1}
+                />
+              ))}
+              <button
+                className="arbo-ajouter-nav"
+                style={{ paddingLeft: `${48 + profondeur * 16}px` }}
+                onClick={() => onCreerNav(nav.dossierId, nav.id)}
+              >
+                + Ajouter une nav
+              </button>
+            </>
           )}
         </div>
       )}

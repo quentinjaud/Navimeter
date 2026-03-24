@@ -12,6 +12,7 @@ interface PropsModaleElement {
   edition?: Record<string, unknown> | null;
   dossierId?: string;
   parentId?: string;
+  parentNavId?: string;
   tracesDisponibles?: ResumeTrace[];
 }
 
@@ -28,6 +29,7 @@ export default function ModaleElement({
   edition,
   dossierId,
   parentId,
+  parentNavId,
   tracesDisponibles = [],
 }: PropsModaleElement) {
   const [nom, setNom] = useState("");
@@ -89,6 +91,7 @@ export default function ModaleElement({
         type: typeNav,
         traceId: traceId || null,
         dossierId,
+        parentNavId: parentNavId || null,
       });
     }
   };

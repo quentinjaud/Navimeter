@@ -17,6 +17,7 @@ interface ConfigModale {
   edition?: Record<string, unknown> | null;
   dossierId?: string;
   parentId?: string;
+  parentNavId?: string;
 }
 
 const MODALE_FERMEE: ConfigModale = { ouvert: false, type: "dossier" };
@@ -41,8 +42,8 @@ export default function PageAccueil({ dossiers }: PropsPageAccueil) {
     [routeur]
   );
 
-  const ouvrirModaleNav = useCallback((dossierId: string) => {
-    setModale({ ouvert: true, type: "navigation", dossierId });
+  const ouvrirModaleNav = useCallback((dossierId: string, parentNavId?: string) => {
+    setModale({ ouvert: true, type: "navigation", dossierId, parentNavId });
   }, []);
 
   const ouvrirModaleDossier = useCallback(() => {
@@ -114,6 +115,7 @@ export default function PageAccueil({ dossiers }: PropsPageAccueil) {
         edition={modale.edition}
         dossierId={modale.dossierId}
         parentId={modale.parentId}
+        parentNavId={modale.parentNavId}
       />
     </div>
   );
