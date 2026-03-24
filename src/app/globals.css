@@ -3253,6 +3253,260 @@ body {
   background: rgba(67, 114, 139, 0.08);
 }
 
+/* === Arborescence Journal === */
+
+.arbo-panel {
+  width: 300px;
+  background: rgba(255, 253, 249, 0.94);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 40px);
+  overflow: hidden;
+}
+
+.arbo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px 10px 44px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.arbo-titre {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.arbo-btn-ajouter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.arbo-btn-ajouter:hover {
+  background: var(--border-light);
+  color: var(--foreground);
+}
+
+.arbo-recherche {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 12px 0;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.arbo-recherche-icon {
+  color: var(--text-light);
+  flex-shrink: 0;
+}
+
+.arbo-recherche-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: none;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--foreground);
+}
+
+.arbo-recherche-input::placeholder {
+  color: var(--text-light);
+}
+
+.arbo-filtres {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.arbo-filtre {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: none;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  min-height: 24px;
+}
+
+.arbo-filtre:hover {
+  border-color: var(--text-light);
+}
+
+.arbo-filtre-actif {
+  background: var(--foreground);
+  color: white;
+  border-color: var(--foreground);
+}
+
+.arbo-filtre-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.arbo-filtre-actif .arbo-filtre-dot {
+  outline: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.arbo-tree {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.arbo-vide {
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Dossier node */
+.arbo-dossier {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 6px 12px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--foreground);
+  cursor: pointer;
+  min-height: 36px;
+  text-align: left;
+}
+
+.arbo-dossier:hover {
+  background: rgba(0, 0, 0, 0.025);
+}
+
+.arbo-chevron {
+  flex-shrink: 0;
+  color: var(--text-light);
+}
+
+.arbo-dossier-nom {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.arbo-dossier-count {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-light);
+  margin-left: auto;
+  padding-right: 4px;
+}
+
+/* Navigation node */
+.arbo-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 5px 12px;
+  background: none;
+  border: none;
+  border-left: 2px solid transparent;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--foreground);
+  cursor: pointer;
+  min-height: 36px;
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.arbo-nav:hover {
+  background: rgba(0, 0, 0, 0.025);
+}
+
+.arbo-nav-actif {
+  background: rgba(67, 114, 139, 0.06);
+  border-left-color: var(--accent);
+}
+
+.arbo-nav-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.arbo-nav-nom {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.arbo-nav-meta {
+  font-size: 10px;
+  color: var(--text-light);
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.arbo-chargement {
+  font-size: 11px;
+  color: var(--text-light);
+  padding: 8px;
+}
+
+.arbo-ajouter-nav {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 5px 12px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 11px;
+  color: var(--text-light);
+  cursor: pointer;
+  min-height: 32px;
+}
+
+.arbo-ajouter-nav:hover {
+  color: var(--text-secondary);
+}
+
 /* === Bouton settings (dans header panneau lateral) === */
 .btn-settings-accueil {
   width: 44px;
