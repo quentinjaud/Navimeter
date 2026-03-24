@@ -91,7 +91,7 @@ export default function PanneauContenu({
               <LigneItem key={sd.id} type="sousDossier" item={sd} onClick={() => descendreDans(sd)} />
             ))}
             {contenu.navigations.map((nav) => (
-              <LigneItem key={nav.id} type="navigation" item={nav} onClick={() => gererClicNav(nav)} />
+              <LigneItem key={nav.id} type="navigation" item={nav} actif={nav.id === navActive} onClick={() => gererClicNav(nav)} />
             ))}
             {contenu.sousDossiers.length === 0 && contenu.navigations.length === 0 && (
               <div className="panneau-contenu-vide">Aucun contenu</div>

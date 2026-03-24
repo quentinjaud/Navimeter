@@ -87,69 +87,56 @@ body {
    LAYOUT
    ============================================= */
 
-.app-header {
-  background: var(--accent);
-  color: white;
-  padding: 12px 24px;
+/* === Bouton accueil (squiggle, top-left) === */
+.bouton-accueil {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 40;
   display: flex;
   align-items: center;
-  gap: 12px;
-  box-shadow: var(--shadow-sm);
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 253, 249, 0.92);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  transition: box-shadow 0.15s;
 }
 
-.app-header-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  color: white;
-  text-decoration: none;
+.bouton-accueil:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* === Bouton user (rond, top-right) === */
+.bouton-user-wrapper {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 40;
+}
+
+.bouton-user {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.app-header-logo {
-  flex-shrink: 0;
-}
-
-.app-header-subtitle {
-  font-size: 0.875rem;
-  opacity: 0.75;
-}
-
-.app-main {
-  flex: 1;
-}
-
-.app-footer {
-  background: var(--border-light);
-  border-top: 1px solid var(--border);
-  padding: 12px 24px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 0.75rem;
-  color: var(--text-light);
-  overflow: hidden;
-}
-
-.app-footer-version {
-  font-weight: 600;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 253, 249, 0.92);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
   color: var(--text-secondary);
-  white-space: nowrap;
-  flex-shrink: 0;
+  cursor: pointer;
+  transition: box-shadow 0.15s, color 0.15s;
 }
 
-.app-footer-deps {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 6px 12px;
-  flex-shrink: 0;
+.bouton-user:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  color: var(--foreground);
 }
 
-.app-footer-dep {
-  white-space: nowrap;
-}
 
 /* =============================================
    PAGE CONTAINERS
@@ -889,74 +876,6 @@ body {
    HEADER NAV & USER MENU
    ============================================= */
 
-.app-header-nav {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: 24px;
-}
-
-.app-header-nav-link {
-  color: rgba(255, 255, 255, 0.8);
-  text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 500;
-  padding: 6px 12px;
-  border-radius: var(--radius-md);
-  transition: color 0.15s, background 0.15s;
-}
-
-.app-header-nav-link:hover,
-.app-header-nav-link.active {
-  color: white;
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.app-header-spacer {
-  flex: 1;
-}
-
-.app-header-user {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 0.875rem;
-}
-
-.app-header-user-links {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.app-header-user-link {
-  color: rgba(255, 255, 255, 0.8);
-  text-decoration: none;
-  font-size: 0.875rem;
-  padding: 6px 12px;
-  border-radius: var(--radius-md);
-  transition: color 0.15s, background 0.15s;
-}
-
-.app-header-user-link:hover {
-  color: white;
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.app-header-user-menu-btn {
-  color: white;
-  font-family: inherit;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: var(--radius-sm);
-  transition: background 0.15s;
-}
-
-.app-header-user-menu-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
 
 /* =============================================
    LANDING PAGE
@@ -1405,15 +1324,6 @@ body {
 /* ==========================================================================
    VUE TRACE — Page détail immersive (carte plein écran + blocs flottants)
    ========================================================================== */
-
-body:has(.trace-vue-layout) .app-header,
-body:has(.trace-vue-layout) footer {
-  display: none;
-}
-body:has(.trace-vue-layout) .app-main {
-  padding: 0;
-  max-width: none;
-}
 
 .trace-vue-layout {
   position: relative;
@@ -2071,16 +1981,6 @@ body:has(.trace-vue-layout) .app-main {
 /* ==========================================================================
    NETTOYAGE — Page de nettoyage de trace
    ========================================================================== */
-
-/* Masquer header, footer et padding du main quand on est en mode nettoyage */
-body:has(.nettoyage-layout) .app-header,
-body:has(.nettoyage-layout) footer {
-  display: none;
-}
-body:has(.nettoyage-layout) .app-main {
-  padding: 0;
-  max-width: none;
-}
 
 .nettoyage-layout {
   position: relative;
@@ -3086,7 +2986,7 @@ body:has(.nettoyage-layout) .app-main {
 .accueil-panneaux {
   position: fixed;
   top: 72px;
-  left: 20px;
+  left: 16px;
   z-index: 20;
   display: flex;
   flex-direction: column;
@@ -3364,6 +3264,34 @@ body:has(.nettoyage-layout) .app-main {
 
 .tooltip-stats-bas {
   font-size: 11px;
+}
+
+/* === Barre meta nav (pills point-actif en haut de la carte) === */
+.barre-meta-nav {
+  position: fixed;
+  top: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  pointer-events: auto;
+}
+
+.barre-meta-nav-ouvrir {
+  cursor: pointer;
+  background: var(--accent-yellow);
+  color: black;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 4px 12px;
+  min-height: 28px;
+}
+
+/* Ligne item actif */
+.ligne-item-actif {
+  background: rgba(67, 114, 139, 0.08);
 }
 
 /* === Bouton settings (dans header panneau lateral) === */

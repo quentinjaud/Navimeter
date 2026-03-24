@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type { ResumeDossier, ResumeNavigation } from "@/lib/types";
 import PanneauContenu from "./PanneauContenu";
 import TracePreview from "./TracePreview";
+import BarreMetaNav from "./BarreMetaNav";
 import ModaleElement from "../Journal/ModaleElement";
 import PanneauSettings from "../PanneauSettings";
 
@@ -111,6 +112,9 @@ export default function PageAccueil({ dossiers }: PropsPageAccueil) {
       <CarteOGF>
         {navPreview && <TracePreview navigation={navPreview} />}
       </CarteOGF>
+
+      {/* Pills meta en haut de la carte */}
+      {navPreview && <BarreMetaNav navigation={navPreview} onOuvrir={() => gererOuvrir(navPreview.id)} />}
 
       {/* Panneaux flottants empiles verticalement */}
       <div className="accueil-panneaux">
