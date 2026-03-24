@@ -1,5 +1,41 @@
 # Sillage — Changelog
 
+## v0.6.0 — Refonte accueil carte OGF (2026-03-24)
+
+### Nouvelle page d'accueil
+- Carte OpenGeoFiction en fond (zone cotiere fictive, pan + zoom libre)
+- Tuiles desaturees teintees creme pour coller a la charte
+- Marqueurs-dossiers places sur des "ports" fictifs de la cote
+- Drag-and-drop des marqueurs avec snap sur points predefinies
+- Panneau flottant au clic sur un dossier : liste compacte des items avec accent couleur par type
+- Breadcrumb pour naviguer dans les sous-dossiers
+- Projection de trace en mer au clic sur une navigation + tooltips stats
+- Bouton "Ouvrir" pour lancer la vue navigation complete
+
+### Codes couleur par type
+- Bleu (#43728B) — navigation solo
+- Rouge brique (#C45B3E) — aventure (multi-navs assemblees)
+- Jaune (#F6BC00) — regate
+- Gris (#9E9E9E) — trace en edition
+
+### Simplification du modele
+- L'Aventure n'est plus un niveau hierarchique : c'est un type de Navigation (AVENTURE)
+- Dossiers imbriquables (max 2 niveaux) avec position carte OGF
+- Migration Prisma en 2 etapes (ajout champs, puis suppression modele Aventure)
+
+### Panneau Settings V1
+- Panneau flottant accessible via bouton engrenage
+- Vue tableau des dossiers en arborescence
+- Liens vers pages bateaux et traces existantes
+
+### Onboarding
+- Message d'accueil marin pour les nouveaux utilisateurs
+- Creation du premier dossier directement depuis la carte
+
+### Nettoyage
+- Suppression des anciens composants journal (PageJournal, CarteDossier, CarteAventure, etc.)
+- CSS orphelin retire (~130 lignes)
+
 ## v0.5.1 — Icone app, TWA, polish UI (2026-03-24)
 
 ### Icone app
