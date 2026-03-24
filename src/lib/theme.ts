@@ -26,4 +26,8 @@ export const COULEURS = {
   succes: "#2e7d6f",
   /** Danger */
   danger: "#d32f2f",
+  /** Rouge brique — aventure */
+  aventure: "#C45B3E",
+  /** Gris — trace en edition */
+  traceEdition: "#9E9E9E",
 } as const;
