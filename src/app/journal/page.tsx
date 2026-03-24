@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { journalErreur } from "@/lib/journal";
 import PageAccueil from "@/components/Accueil/PageAccueil";
 import type { ResumeDossier } from "@/lib/types";
+import { prochainPointSnap } from "@/lib/pointsSnap";
 
 export default async function PageJournalServeur() {
   const session = await obtenirSession();
@@ -26,6 +27,27 @@ export default async function PageJournalServeur() {
         _count: { select: { sousDossiers: true, navigations: true } },
       },
     });
+
+    // Auto-assign des coordonnees pour les dossiers sans position
+    const positionsUtilisees: { lat: number; lon: number }[] = [];
+    for (const d of resultDossiers) {
+      if (d.markerLat != null && d.markerLon != null) {
+        positionsUtilisees.push({ lat: d.markerLat, lon: d.markerLon });
+      }
+    }
+    for (const d of resultDossiers) {
+      if (d.markerLat == null || d.markerLon == null) {
+        const snap = prochainPointSnap(positionsUtilisees);
+        positionsUtilisees.push(snap);
+        // Persister en base pour ne pas recalculer a chaque fois
+        await prisma.dossier.update({
+          where: { id: d.id },
+          data: { markerLat: snap.lat, markerLon: snap.lon },
+        });
+        d.markerLat = snap.lat;
+        d.markerLon = snap.lon;
+      }
+    }
 
     dossiers = resultDossiers.map((d) => ({
       id: d.id,

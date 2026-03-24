@@ -3065,87 +3065,122 @@ body:has(.nettoyage-layout) .app-main {
   }
 }
 
-/* === Accueil — Carte OGF === */
-.carte-ogf-container {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
+/* === Accueil — Layout lateral + carte === */
+.accueil-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
 }
 
-.carte-ogf-recentrer {
-  position: absolute;
-  bottom: 24px;
-  right: 24px;
+.accueil-panneau-lateral {
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 253, 249, 0.96);
+  border-right: 1px solid var(--border-light);
   z-index: 10;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  border: none;
-  background: rgba(255, 253, 249, 0.92);
-  backdrop-filter: blur(8px);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  font-size: 18px;
-  cursor: pointer;
+}
+
+.accueil-panneau-header {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-light);
 }
 
-/* Fallback si tuiles OGF indisponibles */
+.accueil-panneau-titre {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.accueil-liste-dossiers {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.accueil-dossier-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  border-left: 3px solid transparent;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--foreground);
+  transition: background 0.1s, border-color 0.1s;
+  min-height: 44px;
+}
+
+.accueil-dossier-item:hover {
+  background: var(--border-light);
+}
+
+.accueil-dossier-item-actif {
+  border-left-color: var(--accent-yellow);
+  background: rgba(246, 188, 0, 0.08);
+  font-weight: 600;
+}
+
+.accueil-dossier-nom {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accueil-dossier-count {
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: var(--border-light);
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.accueil-btn-nouveau {
+  margin: 8px 16px 16px;
+}
+
+.accueil-panneau-vide {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.accueil-carte {
+  flex: 1;
+  position: relative;
+}
+
+.carte-ogf-container {
+  width: 100%;
+  height: 100%;
+}
+
 .carte-ogf-container .maplibregl-canvas {
   background: var(--background);
 }
 
-/* === Marqueurs dossiers === */
-.marqueur-dossier {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: rgba(255, 253, 249, 0.92);
-  backdrop-filter: blur(8px);
-  border: 2px solid var(--border);
-  border-radius: 20px;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--foreground);
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  transition: border-color 0.15s, box-shadow 0.15s;
-  white-space: nowrap;
-  min-height: 44px;
-}
-
-.marqueur-dossier-actif {
-  border-color: var(--accent-yellow);
-  box-shadow: 0 2px 12px rgba(246, 188, 0, 0.3);
-}
-
-.marqueur-dossier-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  border-radius: 10px;
-  background: var(--border-light);
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-secondary);
-}
-
-.marqueur-dossier-actif .marqueur-dossier-count {
-  background: var(--accent-yellow);
-  color: black;
-}
-
-/* === Panneau contenu dossier === */
+/* === Panneau contenu dossier (flottant par-dessus la carte) === */
 .panneau-contenu {
   position: fixed;
   top: 24px;
-  left: 24px;
+  left: 304px;
   z-index: 20;
   width: 320px;
   max-height: calc(100vh - 48px);
@@ -3315,50 +3350,22 @@ body:has(.nettoyage-layout) .app-main {
   font-size: 11px;
 }
 
-/* === Onboarding === */
-.panneau-onboarding {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 20;
-  background: rgba(255, 253, 249, 0.95);
-  backdrop-filter: blur(8px);
-  border-radius: 12px;
-  padding: 32px 40px;
-  text-align: center;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
-}
-
-.panneau-onboarding h2 {
-  font-size: 18px;
-  margin-bottom: 8px;
-}
-
-.panneau-onboarding p {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin-bottom: 20px;
-}
-
-/* === Bouton settings === */
+/* === Bouton settings (dans header panneau lateral) === */
 .btn-settings-accueil {
-  position: fixed;
-  top: 24px;
-  right: 24px;
-  z-index: 20;
   width: 44px;
   height: 44px;
-  border-radius: 10px;
+  border-radius: 8px;
   border: none;
-  background: rgba(255, 253, 249, 0.92);
-  backdrop-filter: blur(8px);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  font-size: 20px;
+  background: none;
+  font-size: 18px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--text-secondary);
+}
+.btn-settings-accueil:hover {
+  background: var(--border-light);
 }
 
 /* === PanneauSettings === */

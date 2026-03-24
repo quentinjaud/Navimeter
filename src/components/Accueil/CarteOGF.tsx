@@ -1,32 +1,36 @@
 "use client";
 
-import { useRef, useCallback, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import Map, { type MapRef } from "react-map-gl/maplibre";
-import { VUE_INITIALE_OGF } from "@/lib/pointsSnap";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 interface PropsCarteOGF {
   children?: ReactNode;
-  onClicCarte?: () => void;
 }
 
-const STYLE_OGF = {
+const VUE_INITIALE = {
+  latitude: 47.5,
+  longitude: -3.0,
+  zoom: 7,
+} as const;
+
+const STYLE_OSM = {
   version: 8 as const,
   sources: {
-    ogf: {
+    osm: {
       type: "raster" as const,
-      tiles: ["https://tile.opengeofiction.net/ogf-carto/{z}/{x}/{y}.png"],
+      tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
       tileSize: 256,
-      attribution: "&copy; OpenGeoFiction contributors",
+      attribution: "&copy; OpenStreetMap contributors",
     },
   },
   layers: [
     {
-      id: "ogf-tiles",
+      id: "osm-tiles",
       type: "raster" as const,
-      source: "ogf",
+      source: "osm",
       paint: {
-        "raster-saturation": -0.6,
+        "raster-saturation": -0.5,
         "raster-brightness-min": 0.15,
         "raster-contrast": -0.1,
       },
@@ -34,36 +38,20 @@ const STYLE_OGF = {
   ],
 };
 
-export default function CarteOGF({ children, onClicCarte }: PropsCarteOGF) {
+export default function CarteOGF({ children }: PropsCarteOGF) {
   const mapRef = useRef<MapRef>(null);
-
-  const recentrer = useCallback(() => {
-    mapRef.current?.flyTo({
-      center: [VUE_INITIALE_OGF.longitude, VUE_INITIALE_OGF.latitude],
-      zoom: VUE_INITIALE_OGF.zoom,
-      duration: 1500,
-    });
-  }, []);
 
   return (
     <div className="carte-ogf-container">
       <Map
         ref={mapRef}
-        initialViewState={VUE_INITIALE_OGF}
-        mapStyle={STYLE_OGF}
-        onClick={onClicCarte}
+        initialViewState={VUE_INITIALE}
+        mapStyle={STYLE_OSM}
         style={{ width: "100%", height: "100%" }}
         attributionControl={false}
       >
         {children}
       </Map>
-      <button
-        className="carte-ogf-recentrer"
-        onClick={recentrer}
-        title="Recentrer la carte"
-      >
-        ⌖
-      </button>
     </div>
   );
 }

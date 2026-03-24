@@ -1,8 +1,6 @@
-// src/lib/pointsSnap.ts
 /**
- * Points de snap predefinies sur la zone cotiere OGF (-28.90 / 48.43, zoom 8).
- * Chaque point represente un "port" fictif ou un dossier peut se placer.
- * Coordonnees relevees manuellement sur la cote gauche de la zone.
+ * Points de snap predefinies sur la cote bretonne sud (zoom 9).
+ * Chaque point represente un port ou un dossier peut se placer.
  */
 export interface PointSnap {
   lat: number;
@@ -11,31 +9,31 @@ export interface PointSnap {
 }
 
 export const POINTS_SNAP: PointSnap[] = [
-  { lat: -28.12, lon: 47.85, nom: "Port Nord" },
-  { lat: -28.35, lon: 47.72, nom: "Baie des Brumes" },
-  { lat: -28.58, lon: 47.90, nom: "Cap Ouest" },
-  { lat: -28.80, lon: 48.05, nom: "Anse du Phare" },
-  { lat: -29.05, lon: 47.95, nom: "Port du Levant" },
-  { lat: -29.30, lon: 48.10, nom: "Crique Sauvage" },
-  { lat: -29.55, lon: 47.80, nom: "Ile du Large" },
-  { lat: -28.25, lon: 48.20, nom: "Pointe des Vents" },
-  { lat: -28.65, lon: 48.30, nom: "Havre Tranquille" },
-  { lat: -29.10, lon: 48.35, nom: "Mouillage Sud" },
-  { lat: -29.45, lon: 48.25, nom: "Baie Cachee" },
-  { lat: -28.45, lon: 48.50, nom: "Port Central" },
+  { lat: 47.87, lon: -3.92, nom: "Concarneau" },
+  { lat: 47.72, lon: -3.44, nom: "Lorient" },
+  { lat: 47.66, lon: -2.76, nom: "Vannes" },
+  { lat: 47.35, lon: -3.15, nom: "Belle-Ile" },
+  { lat: 47.84, lon: -4.34, nom: "Douarnenez" },
+  { lat: 48.38, lon: -4.49, nom: "Brest" },
+  { lat: 47.50, lon: -2.75, nom: "Le Crouesty" },
+  { lat: 47.73, lon: -3.98, nom: "Glenan" },
+  { lat: 47.63, lon: -3.35, nom: "Groix" },
+  { lat: 47.28, lon: -2.35, nom: "Le Croisic" },
+  { lat: 48.73, lon: -3.99, nom: "Roscoff" },
+  { lat: 48.65, lon: -2.76, nom: "Saint-Malo" },
 ];
 
-/** Centre de la zone OGF pour la vue initiale */
+/** Centre de la vue initiale — Bretagne sud */
 export const VUE_INITIALE_OGF = {
-  latitude: -28.90,
-  longitude: 48.43,
-  zoom: 8,
+  latitude: 47.65,
+  longitude: -3.40,
+  zoom: 9,
 } as const;
 
-/** Zone d'eau libre pour projeter les traces (cote droit du viewport) */
+/** Zone d'eau libre pour projeter les traces (au large, sud-ouest) */
 export const ZONE_PROJECTION_TRACE = {
-  lat: -28.90,
-  lon: 49.50,
+  lat: 47.20,
+  lon: -4.00,
 } as const;
 
 /**
@@ -76,6 +74,6 @@ export const NOM_DOSSIER_DEFAUT = "Non classes";
 
 /** Position fixe du marqueur "Non classes" */
 export const POSITION_DOSSIER_DEFAUT = {
-  lat: -29.70,
-  lon: 48.00,
+  lat: 47.50,
+  lon: -3.10,
 } as const;

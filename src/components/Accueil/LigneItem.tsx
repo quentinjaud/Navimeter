@@ -54,6 +54,9 @@ export default function LigneItem(props: PropsLigneItem) {
           <span className="ligne-item-pill">{item.nbSousNavs} navs</span>
         )}
       </span>
+      {item.type === "AVENTURE" && item.nbSousNavs > 0 && (
+        <span className="ligne-item-chevron">›</span>
+      )}
     </button>
   );
 }
