@@ -10,6 +10,8 @@ interface PropsPanneauContenu {
   onFermer: () => void;
   onClicNavigation: (nav: ResumeNavigation) => void;
   onOuvrir: (navId: string) => void;
+  onCreerNav: (dossierId: string) => void;
+  onCreerSousDossier: (parentId: string) => void;
 }
 
 interface NiveauBreadcrumb {
@@ -19,6 +21,7 @@ interface NiveauBreadcrumb {
 
 export default function PanneauContenu({
   dossierId, nomDossier, onFermer, onClicNavigation, onOuvrir,
+  onCreerNav, onCreerSousDossier,
 }: PropsPanneauContenu) {
   const [pile, setPile] = useState<NiveauBreadcrumb[]>([{ id: dossierId, nom: nomDossier }]);
   const [contenu, setContenu] = useState<ContenuDossier | null>(null);
@@ -97,11 +100,13 @@ export default function PanneauContenu({
         ) : null}
       </div>
 
-      {navActive && (
-        <div className="panneau-contenu-footer">
+      <div className="panneau-contenu-footer">
+        {navActive && (
           <button className="btn-principal" onClick={() => onOuvrir(navActive)}>Ouvrir</button>
-        </div>
-      )}
+        )}
+        <button className="btn-secondaire" onClick={() => onCreerNav(niveauActuel.id)}>+ Nav</button>
+        <button className="btn-secondaire" onClick={() => onCreerSousDossier(niveauActuel.id)}>+ Sous-dossier</button>
+      </div>
     </div>
   );
 }

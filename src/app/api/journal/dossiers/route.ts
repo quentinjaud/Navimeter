@@ -74,7 +74,7 @@ export async function POST(requete: NextRequest) {
   const userId = await obtenirIdUtilisateurEffectif(session);
 
   try {
-    const { nom, description, markerLat, markerLon } = await requete.json();
+    const { nom, description, markerLat, markerLon, parentId } = await requete.json();
 
     if (!nom || typeof nom !== "string" || nom.trim().length === 0) {
       return NextResponse.json({ error: "Nom requis" }, { status: 400 });
@@ -97,12 +97,23 @@ export async function POST(requete: NextRequest) {
       lon = snap.lon;
     }
 
+    // Valider le parent si fourni
+    if (parentId) {
+      const parent = await prisma.dossier.findFirst({
+        where: { id: parentId, userId },
+      });
+      if (!parent) {
+        return NextResponse.json({ error: "Dossier parent non trouve" }, { status: 404 });
+      }
+    }
+
     const dossier = await prisma.dossier.create({
       data: {
         nom: nom.trim(),
         description: description?.trim() || null,
-        markerLat: lat,
-        markerLon: lon,
+        markerLat: parentId ? null : lat,
+        markerLon: parentId ? null : lon,
+        parentId: parentId || null,
         userId,
       },
     });

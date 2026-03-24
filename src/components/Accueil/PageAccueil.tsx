@@ -7,8 +7,19 @@ import type { ResumeDossier, ResumeNavigation } from "@/lib/types";
 import MarqueurDossier from "./MarqueurDossier";
 import PanneauContenu from "./PanneauContenu";
 import ProjectionTrace from "./ProjectionTrace";
+import ModaleElement from "../Journal/ModaleElement";
 
 const CarteOGF = dynamic(() => import("./CarteOGF"), { ssr: false });
+
+interface ConfigModale {
+  ouvert: boolean;
+  type: "dossier" | "navigation";
+  edition?: Record<string, unknown> | null;
+  dossierId?: string;
+  parentId?: string;
+}
+
+const MODALE_FERMEE: ConfigModale = { ouvert: false, type: "dossier" };
 
 interface PropsPageAccueil {
   dossiers: ResumeDossier[];
@@ -18,6 +29,7 @@ export default function PageAccueil({ dossiers }: PropsPageAccueil) {
   const routeur = useRouter();
   const [dossierActif, setDossierActif] = useState<string | null>(null);
   const [navPreview, setNavPreview] = useState<ResumeNavigation | null>(null);
+  const [modale, setModale] = useState<ConfigModale>(MODALE_FERMEE);
 
   const dossierSelectionne = dossiers.find((d) => d.id === dossierActif);
 
@@ -59,6 +71,52 @@ export default function PageAccueil({ dossiers }: PropsPageAccueil) {
     [routeur]
   );
 
+  // --- Modale creation/edition ---
+
+  const ouvrirModaleNav = useCallback((dossierId: string) => {
+    setModale({ ouvert: true, type: "navigation", dossierId });
+  }, []);
+
+  const ouvrirModaleSousDossier = useCallback((parentId: string) => {
+    setModale({ ouvert: true, type: "dossier", parentId });
+  }, []);
+
+  const fermerModale = useCallback(() => {
+    setModale(MODALE_FERMEE);
+  }, []);
+
+  const gererValiderModale = useCallback(
+    async (donnees: Record<string, unknown>) => {
+      const estEdition = !!modale.edition;
+
+      if (modale.type === "dossier") {
+        const url = estEdition
+          ? `/api/journal/dossiers/${modale.edition?.id}`
+          : "/api/journal/dossiers";
+        const method = estEdition ? "PATCH" : "POST";
+        await fetch(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(donnees),
+        });
+      } else {
+        const url = estEdition
+          ? `/api/journal/navigations/${modale.edition?.id}`
+          : "/api/journal/navigations";
+        const method = estEdition ? "PATCH" : "POST";
+        await fetch(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(donnees),
+        });
+      }
+
+      fermerModale();
+      routeur.refresh();
+    },
+    [modale, fermerModale, routeur]
+  );
+
   return (
     <>
       <CarteOGF onClicCarte={gererClicCarte}>
@@ -81,6 +139,8 @@ export default function PageAccueil({ dossiers }: PropsPageAccueil) {
           onFermer={gererFermer}
           onClicNavigation={gererClicNavigation}
           onOuvrir={gererOuvrir}
+          onCreerNav={ouvrirModaleNav}
+          onCreerSousDossier={ouvrirModaleSousDossier}
         />
       )}
 
@@ -101,6 +161,16 @@ export default function PageAccueil({ dossiers }: PropsPageAccueil) {
       >
         ⚙
       </button>
+
+      <ModaleElement
+        ouvert={modale.ouvert}
+        onFermer={fermerModale}
+        onValider={gererValiderModale}
+        type={modale.type}
+        edition={modale.edition}
+        dossierId={modale.dossierId}
+        parentId={modale.parentId}
+      />
     </>
   );
 }

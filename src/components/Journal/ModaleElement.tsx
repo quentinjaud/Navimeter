@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Modal, TextInput, Textarea, Select, NativeSelect } from "@mantine/core";
+import { Modal, TextInput, Textarea, NativeSelect, Select } from "@mantine/core";
 import type { ResumeTrace } from "@/lib/types";
 
 interface PropsModaleElement {
@@ -11,6 +11,7 @@ interface PropsModaleElement {
   type: "dossier" | "navigation";
   edition?: Record<string, unknown> | null;
   dossierId?: string;
+  parentId?: string;
   tracesDisponibles?: ResumeTrace[];
 }
 
@@ -26,6 +27,7 @@ export default function ModaleElement({
   type,
   edition,
   dossierId,
+  parentId,
   tracesDisponibles = [],
 }: PropsModaleElement) {
   const [nom, setNom] = useState("");
@@ -75,7 +77,11 @@ export default function ModaleElement({
     if (!nom.trim()) return;
 
     if (type === "dossier") {
-      onValider({ nom: nom.trim(), description: description.trim() || null });
+      onValider({
+        nom: nom.trim(),
+        description: description.trim() || null,
+        parentId: parentId || null,
+      });
     } else {
       onValider({
         nom: nom.trim(),
