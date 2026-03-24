@@ -2960,11 +2960,11 @@ body {
 /* Panneau dossiers — detache, avec bordures */
 .accueil-panneau-dossiers {
   width: 280px;
-  background: rgba(255, 253, 249, 0.94);
+  background: rgba(255, 253, 249, 0.92);
   backdrop-filter: blur(8px);
   border: 1px solid var(--border);
   border-radius: 10px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
@@ -3053,11 +3053,11 @@ body {
 /* === Panneau contenu dossier (deploie sous le panneau dossiers) === */
 .panneau-contenu {
   width: 280px;
-  background: rgba(255, 253, 249, 0.94);
+  background: rgba(255, 253, 249, 0.92);
   backdrop-filter: blur(8px);
   border: 1px solid var(--border);
   border-radius: 10px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   max-height: calc(100vh - 48px);
   display: flex;
   flex-direction: column;
@@ -3257,11 +3257,11 @@ body {
 
 .arbo-panel {
   width: 300px;
-  background: rgba(255, 253, 249, 0.94);
+  background: rgba(255, 253, 249, 0.92);
   backdrop-filter: blur(8px);
   border: 1px solid var(--border);
   border-radius: 10px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 40px);
@@ -3278,18 +3278,18 @@ body {
 
 .arbo-titre {
   font-size: 12px;
-  font-weight: 600;
-  color: var(--text-secondary);
+  font-weight: 800;
+  color: var(--accent);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
 }
 
 .arbo-btn-ajouter {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   border-radius: 6px;
   border: 1px solid var(--border);
   background: none;
@@ -3350,7 +3350,7 @@ body {
   font-size: 11px;
   color: var(--foreground);
   cursor: pointer;
-  min-height: 28px;
+  min-height: 36px;
 }
 
 .arbo-select:focus {
@@ -3389,7 +3389,7 @@ body {
   font-weight: 600;
   color: var(--foreground);
   cursor: pointer;
-  min-height: 36px;
+  min-height: 44px;
   text-align: left;
 }
 
@@ -3431,7 +3431,7 @@ body {
   font-size: 12px;
   color: var(--foreground);
   cursor: pointer;
-  min-height: 36px;
+  min-height: 44px;
   text-align: left;
   transition: background 0.1s;
 }
@@ -3470,8 +3470,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 32px;
+  height: 32px;
   border: none;
   background: none;
   padding: 0;
@@ -3519,7 +3519,7 @@ body {
   font-size: 11px;
   color: var(--text-light);
   cursor: pointer;
-  min-height: 32px;
+  min-height: 44px;
 }
 
 .arbo-ajouter-nav:hover {
