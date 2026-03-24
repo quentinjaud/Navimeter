@@ -4,6 +4,7 @@ import { usePanneau } from "@/lib/contexts/PanneauContext";
 import PanneauFlottant from "@/components/PanneauFlottant";
 import ContenuTraces from "./ContenuTraces";
 import ContenuBateaux from "./ContenuBateaux";
+import ContenuPreferences from "./ContenuPreferences";
 
 export default function PanneauFlottantRendu() {
   const { panneauOuvert, fermerPanneau } = usePanneau();
@@ -13,7 +14,7 @@ export default function PanneauFlottantRendu() {
   const config = {
     traces: { titre: "Mes traces", largeur: 400, contenu: <ContenuTraces /> },
     bateaux: { titre: "Mes bateaux", largeur: 340, contenu: <ContenuBateaux /> },
-    preferences: { titre: "Preferences", largeur: 340, contenu: <div>TODO: preferences</div> },
+    preferences: { titre: "Preferences", largeur: 340, contenu: <ContenuPreferences /> },
   } as const;
 
   const panneau = config[panneauOuvert];

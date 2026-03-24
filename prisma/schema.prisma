@@ -10,20 +10,23 @@ datasource db {
 // === Better Auth ===
 
 model User {
-  id            String    @id
-  name          String
-  email         String    @unique
-  emailVerified Boolean
-  image         String?
-  role          String    @default("user")
-  createdAt     DateTime
-  updatedAt     DateTime
-  sessions      Session[]
-  accounts      Account[]
-  traces        Trace[]
-  bateaux       Bateau[]
-  dossiers      Dossier[]
-  navigations   Navigation[]
+  id              String    @id
+  name            String
+  email           String    @unique
+  emailVerified   Boolean
+  image           String?
+  role            String    @default("user")
+  portAttacheLat  Float?
+  portAttacheLon  Float?
+  portAttacheNom  String?
+  createdAt       DateTime
+  updatedAt       DateTime
+  sessions        Session[]
+  accounts        Account[]
+  traces          Trace[]
+  bateaux         Bateau[]
+  dossiers        Dossier[]
+  navigations     Navigation[]
 }
 
 model Session {
@@ -169,8 +172,10 @@ model Dossier {
 model Navigation {
   id               String         @id @default(cuid())
   nom              String
+  slug             String?        @unique
   date             DateTime
   type             TypeNavigation @default(SOLO)
+  shareToken       String?        @unique
   userId           String
   user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   dossierId        String

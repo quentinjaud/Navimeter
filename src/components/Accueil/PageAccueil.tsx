@@ -25,9 +25,10 @@ const MODALE_FERMEE: ConfigModale = { ouvert: false, type: "dossier" };
 interface PropsPageAccueil {
   dossiers: ResumeDossier[];
   bateaux: ResumeBateau[];
+  portAttache?: { lat: number | null; lon: number | null; nom: string | null };
 }
 
-export default function PageAccueil({ dossiers, bateaux }: PropsPageAccueil) {
+export default function PageAccueil({ dossiers, bateaux, portAttache }: PropsPageAccueil) {
   const routeur = useRouter();
   const [navPreview, setNavPreview] = useState<ResumeNavigation | null>(null);
   const [modale, setModale] = useState<ConfigModale>(MODALE_FERMEE);
@@ -87,7 +88,12 @@ export default function PageAccueil({ dossiers, bateaux }: PropsPageAccueil) {
 
   return (
     <div className="accueil-layout">
-      <CarteFond>
+      <CarteFond
+        centreLat={portAttache?.lat ?? undefined}
+        centreLon={portAttache?.lon ?? undefined}
+        portAttacheLat={portAttache?.lat}
+        portAttacheLon={portAttache?.lon}
+      >
         {navPreview && <TracePreview navigation={navPreview} />}
       </CarteFond>
 
