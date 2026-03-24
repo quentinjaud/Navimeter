@@ -3334,45 +3334,28 @@ body {
 
 .arbo-filtres {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   padding: 8px 12px;
   border-bottom: 1px solid var(--border-light);
 }
 
-.arbo-filtre {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
+.arbo-select {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 6px;
   border: 1px solid var(--border);
-  border-radius: 12px;
-  background: none;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.6);
   font-family: inherit;
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--text-secondary);
+  font-size: 11px;
+  color: var(--foreground);
   cursor: pointer;
-  min-height: 24px;
+  min-height: 28px;
 }
 
-.arbo-filtre:hover {
-  border-color: var(--text-light);
-}
-
-.arbo-filtre-actif {
-  background: var(--foreground);
-  color: white;
-  border-color: var(--foreground);
-}
-
-.arbo-filtre-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
-
-.arbo-filtre-actif .arbo-filtre-dot {
-  outline: 1px solid rgba(255, 255, 255, 0.5);
+.arbo-select:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
 .arbo-tree {

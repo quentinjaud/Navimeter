@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import type { ResumeDossier, ResumeNavigation } from "@/lib/types";
+import type { ResumeDossier, ResumeBateau, ResumeNavigation } from "@/lib/types";
 import ArborescenceJournal from "./ArborescenceJournal";
 import TracePreview from "./TracePreview";
 import BarreMetaNav from "./BarreMetaNav";
@@ -24,9 +24,10 @@ const MODALE_FERMEE: ConfigModale = { ouvert: false, type: "dossier" };
 
 interface PropsPageAccueil {
   dossiers: ResumeDossier[];
+  bateaux: ResumeBateau[];
 }
 
-export default function PageAccueil({ dossiers }: PropsPageAccueil) {
+export default function PageAccueil({ dossiers, bateaux }: PropsPageAccueil) {
   const routeur = useRouter();
   const [navPreview, setNavPreview] = useState<ResumeNavigation | null>(null);
   const [modale, setModale] = useState<ConfigModale>(MODALE_FERMEE);
@@ -100,6 +101,7 @@ export default function PageAccueil({ dossiers }: PropsPageAccueil) {
       <div className="accueil-panneaux">
         <ArborescenceJournal
           dossiers={dossiers}
+          bateaux={bateaux}
           navActiveId={navPreview?.id ?? null}
           onClicNavigation={gererClicNavigation}
           onCreerDossier={ouvrirModaleDossier}

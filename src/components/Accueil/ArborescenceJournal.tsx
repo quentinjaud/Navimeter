@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Search, ChevronRight, ChevronDown, Plus } from "lucide-react";
-import type { ResumeDossier, ResumeNavigation, ContenuDossier } from "@/lib/types";
+import type { ResumeDossier, ResumeBateau, ResumeNavigation, ContenuDossier } from "@/lib/types";
 import { formaterDistance, formaterDuree } from "@/lib/utilitaires";
 
 // --- Types ---
@@ -11,6 +11,7 @@ type FiltreType = "" | "SOLO" | "AVENTURE" | "REGATE";
 
 interface PropsArborescenceJournal {
   dossiers: ResumeDossier[];
+  bateaux: ResumeBateau[];
   navActiveId: string | null;
   onClicNavigation: (nav: ResumeNavigation) => void;
   onCreerDossier: () => void;
@@ -23,17 +24,11 @@ const COULEURS_TYPE: Record<string, string> = {
   REGATE: "var(--accent-yellow)",
 };
 
-const LABELS_FILTRE: { valeur: FiltreType; label: string }[] = [
-  { valeur: "", label: "Tous" },
-  { valeur: "SOLO", label: "Solo" },
-  { valeur: "AVENTURE", label: "Aventure" },
-  { valeur: "REGATE", label: "Regate" },
-];
-
 // --- Composant principal ---
 
 export default function ArborescenceJournal({
   dossiers,
+  bateaux,
   navActiveId,
   onClicNavigation,
   onCreerDossier,
@@ -41,6 +36,7 @@ export default function ArborescenceJournal({
 }: PropsArborescenceJournal) {
   const [recherche, setRecherche] = useState("");
   const [filtre, setFiltre] = useState<FiltreType>("");
+  const [filtreBateau, setFiltreBateau] = useState("");
   const [dossiersOuverts, setDossiersOuverts] = useState<Set<string>>(
     () => new Set(dossiers.map((d) => d.id))
   );
@@ -117,23 +113,30 @@ export default function ArborescenceJournal({
         />
       </div>
 
-      {/* Filtres par type */}
+      {/* Filtres */}
       <div className="arbo-filtres">
-        {LABELS_FILTRE.map(({ valeur, label }) => (
-          <button
-            key={valeur}
-            className={`arbo-filtre ${filtre === valeur ? "arbo-filtre-actif" : ""}`}
-            onClick={() => setFiltre(filtre === valeur ? "" : valeur)}
+        <select
+          className="arbo-select"
+          value={filtre}
+          onChange={(e) => setFiltre(e.target.value as FiltreType)}
+        >
+          <option value="">Tous types</option>
+          <option value="SOLO">Solo</option>
+          <option value="AVENTURE">Aventure</option>
+          <option value="REGATE">Regate</option>
+        </select>
+        {bateaux.length > 0 && (
+          <select
+            className="arbo-select"
+            value={filtreBateau}
+            onChange={(e) => setFiltreBateau(e.target.value)}
           >
-            {valeur && (
-              <span
-                className="arbo-filtre-dot"
-                style={{ background: COULEURS_TYPE[valeur] }}
-              />
-            )}
-            {label}
-          </button>
-        ))}
+            <option value="">Tous bateaux</option>
+            {bateaux.map((b) => (
+              <option key={b.id} value={b.id}>{b.nom}</option>
+            ))}
+          </select>
+        )}
       </div>
 
       {/* Arborescence */}
@@ -157,6 +160,7 @@ export default function ArborescenceJournal({
               navActiveId={navActiveId}
               termeRecherche={termeRecherche}
               filtre={filtre}
+              filtreBateau={filtreBateau}
               onToggle={toggleDossier}
               onClicNavigation={onClicNavigation}
               onCreerNav={onCreerNav}
@@ -179,6 +183,7 @@ function NoeudDossier({
   navActiveId,
   termeRecherche,
   filtre,
+  filtreBateau,
   onToggle,
   onClicNavigation,
   onCreerNav,
@@ -191,6 +196,7 @@ function NoeudDossier({
   navActiveId: string | null;
   termeRecherche: string;
   filtre: FiltreType;
+  filtreBateau: string;
   onToggle: (id: string) => void;
   onClicNavigation: (nav: ResumeNavigation) => void;
   onCreerNav: (dossierId: string) => void;
@@ -201,11 +207,12 @@ function NoeudDossier({
     if (!contenu) return [];
     return contenu.navigations.filter((nav) => {
       if (filtre && nav.type !== filtre) return false;
+      if (filtreBateau && nav.trace?.bateau?.id !== filtreBateau) return false;
       if (termeRecherche && !nav.nom.toLowerCase().includes(termeRecherche))
         return false;
       return true;
     });
-  }, [contenu, filtre, termeRecherche]);
+  }, [contenu, filtre, filtreBateau, termeRecherche]);
 
   // Si recherche/filtre actif et rien ne match, masquer le dossier
   const aDesResultats =
@@ -388,26 +395,17 @@ function NoeudNavigation({
               ...
             </div>
           ) : (
-            <>
-              {sousNavs?.map((sn) => (
-                <NoeudNavigation
-                  key={sn.id}
-                  nav={sn}
-                  actif={sn.id === navActiveId}
-                  navActiveId={navActiveId}
-                  onClick={onClick}
-                  onCreerNav={onCreerNav}
-                  profondeur={profondeur + 1}
-                />
-              ))}
-              <button
-                className="arbo-ajouter-nav"
-                style={{ paddingLeft: `${48 + profondeur * 16}px` }}
-                onClick={() => onCreerNav(nav.dossierId, nav.id)}
-              >
-                + Ajouter une nav
-              </button>
-            </>
+            sousNavs?.map((sn) => (
+              <NoeudNavigation
+                key={sn.id}
+                nav={sn}
+                actif={sn.id === navActiveId}
+                navActiveId={navActiveId}
+                onClick={onClick}
+                onCreerNav={onCreerNav}
+                profondeur={profondeur + 1}
+              />
+            ))
           )}
         </div>
       )}

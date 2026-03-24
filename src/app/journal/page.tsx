@@ -5,7 +5,7 @@ import { obtenirSession, obtenirIdUtilisateurEffectif } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { journalErreur } from "@/lib/journal";
 import PageAccueil from "@/components/Accueil/PageAccueil";
-import type { ResumeDossier } from "@/lib/types";
+import type { ResumeDossier, ResumeBateau } from "@/lib/types";
 import { prochainPointSnap } from "@/lib/pointsSnap";
 
 export default async function PageJournalServeur() {
@@ -17,16 +17,23 @@ export default async function PageJournalServeur() {
   const userId = await obtenirIdUtilisateurEffectif(session);
 
   let dossiers: ResumeDossier[] = [];
+  let bateaux: ResumeBateau[] = [];
   let erreurBD = false;
 
   try {
-    const resultDossiers = await prisma.dossier.findMany({
+    const [resultDossiers, resultBateaux] = await Promise.all([
+      prisma.dossier.findMany({
       where: { userId, parentId: null },
       orderBy: { createdAt: "desc" },
       include: {
         _count: { select: { sousDossiers: true, navigations: true } },
       },
-    });
+    }),
+      prisma.bateau.findMany({
+        where: { userId },
+        orderBy: { nom: "asc" },
+      }),
+    ]);
 
     // Auto-assign des coordonnees pour les dossiers sans position
     const positionsUtilisees: { lat: number; lon: number }[] = [];
@@ -48,6 +55,14 @@ export default async function PageJournalServeur() {
         d.markerLon = snap.lon;
       }
     }
+
+    bateaux = resultBateaux.map((b) => ({
+      id: b.id,
+      nom: b.nom,
+      classe: b.classe,
+      longueur: b.longueur,
+      createdAt: b.createdAt.toISOString(),
+    }));
 
     dossiers = resultDossiers.map((d) => ({
       id: d.id,
@@ -72,7 +87,7 @@ export default async function PageJournalServeur() {
           Impossible de charger les donnees. Veuillez rafraichir la page.
         </div>
       )}
-      <PageAccueil dossiers={dossiers} />
+      <PageAccueil dossiers={dossiers} bateaux={bateaux} />
     </>
   );
 }
