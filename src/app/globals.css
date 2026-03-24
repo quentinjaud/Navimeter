@@ -2424,7 +2424,8 @@ body {
   background: white;
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 6px 10px;
+  padding: 10px 12px;
+  min-height: 44px;
   flex: 1;
   min-width: 150px;
 }
@@ -2439,7 +2440,8 @@ body {
 }
 
 .trace-filter-select {
-  padding: 6px 10px;
+  padding: 10px 12px;
+  min-height: 44px;
   border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 13px;
@@ -2454,13 +2456,16 @@ body {
 }
 
 .trace-filter-tri-btn {
-  padding: 5px 10px;
+  padding: 10px 12px;
+  min-height: 44px;
   border: 1px solid var(--border);
   background: white;
   font-size: 12px;
   cursor: pointer;
   color: var(--text-secondary);
   transition: background 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
 }
 .trace-filter-tri-btn:first-child {
   border-radius: 6px 0 0 6px;
@@ -2976,8 +2981,8 @@ body {
   color: black;
   font-weight: 600;
   font-family: inherit;
-  padding: 4px 12px;
-  min-height: 36px;
+  padding: 8px 12px;
+  min-height: 44px;
   min-width: 44px;
 }
 
@@ -3199,8 +3204,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   border: none;
   background: none;
   padding: 0;
