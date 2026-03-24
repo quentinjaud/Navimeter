@@ -306,7 +306,25 @@ export default function NavigationVueClient({
               id: "partager",
               icone: <Share2 />,
               label: "Partager cette navigation",
-              onClick: () => { /* TODO lot 10: generer lien partage */ },
+              onClick: async () => {
+                try {
+                  const rep = await fetch(`/api/journal/navigations/${navigationId}/partage`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({}),
+                  });
+                  if (rep.ok) {
+                    const { shareToken } = await rep.json();
+                    if (shareToken) {
+                      const url = `${window.location.origin}/partage/${shareToken}`;
+                      await navigator.clipboard.writeText(url);
+                      alert("Lien copie !");
+                    }
+                  }
+                } catch {
+                  // silencieux
+                }
+              },
             },
             {
               id: "editer",
