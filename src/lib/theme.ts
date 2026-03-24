@@ -31,3 +31,10 @@ export const COULEURS = {
   /** Gris — trace en edition */
   traceEdition: "#9E9E9E",
 } as const;
+
+/** Couleur par type de navigation (valeurs hex pour MapLibre et contextes non-CSS) */
+export const COULEURS_PAR_TYPE: Record<string, string> = {
+  SOLO: COULEURS.accent,
+  AVENTURE: COULEURS.aventure,
+  REGATE: COULEURS.jaune,
+} as const;

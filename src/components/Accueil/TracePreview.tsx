@@ -3,16 +3,11 @@
 import { useMemo, useEffect } from "react";
 import { Source, Layer, useMap } from "react-map-gl/maplibre";
 import type { ResumeNavigation } from "@/lib/types";
+import { COULEURS_PAR_TYPE } from "@/lib/theme";
 
 interface PropsTracePreview {
   navigation: ResumeNavigation;
 }
-
-const COULEURS_TRACE: Record<string, string> = {
-  SOLO: "#43728B",
-  AVENTURE: "#C45B3E",
-  REGATE: "#F6BC00",
-};
 
 export default function TracePreview({ navigation }: PropsTracePreview) {
   const { current: map } = useMap();
@@ -61,7 +56,7 @@ export default function TracePreview({ navigation }: PropsTracePreview) {
 
   if (!geojson) return null;
 
-  const couleur = COULEURS_TRACE[navigation.type] ?? "#43728B";
+  const couleur = COULEURS_PAR_TYPE[navigation.type] ?? COULEURS_PAR_TYPE.SOLO;
 
   return (
     <Source id="trace-preview" type="geojson" data={geojson}>

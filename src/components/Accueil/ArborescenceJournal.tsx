@@ -110,6 +110,7 @@ export default function ArborescenceJournal({
           placeholder="Rechercher..."
           value={recherche}
           onChange={(e) => setRecherche(e.target.value)}
+          aria-label="Rechercher une navigation"
         />
       </div>
 
@@ -231,6 +232,7 @@ function NoeudDossier({
         className="arbo-dossier"
         style={{ paddingLeft: `${16 + profondeur * 16}px` }}
         onClick={() => onToggle(dossier.id)}
+        aria-expanded={ouvert}
       >
         <Chevron size={14} className="arbo-chevron" />
         <span className="arbo-dossier-nom">{dossier.nom}</span>
@@ -363,6 +365,8 @@ function NoeudNavigation({
               e.stopPropagation();
               toggleAventure();
             }}
+            aria-expanded={ouvert}
+            aria-label={`Deplier ${nav.nom}`}
           >
             <Chevron size={12} className="arbo-chevron" />
           </button>
