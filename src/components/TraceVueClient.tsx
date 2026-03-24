@@ -10,6 +10,9 @@ import RoseDesVents from "@/components/Map/RoseDesVents";
 import { trouverCelluleActive } from "@/lib/geo/stats-vent";
 import type { PointCarte, CelluleMeteoClient, StatsVent } from "@/lib/types";
 import { useEtatVue, HAUTEUR_GRAPHIQUE_INITIALE } from "@/lib/hooks/useEtatVue";
+import BarreOutils from "@/components/BarreOutils";
+import { Eraser, Pencil, Link2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface PropsTraceVueClient {
   traceId: string;
@@ -88,6 +91,8 @@ export default function TraceVueClient({
     return trouverCelluleActive(cellulesMeteoState, pointActif.timestamp, pointActif.lat, pointActif.lon);
   }, [cellulesMeteoState, pointActif]);
 
+  const routeur = useRouter();
+
   return (
     <div style={{ "--hauteur-graphique": `${paddingBas}px` } as React.CSSProperties}>
       <div className="trace-vue-stats-wrapper">
@@ -105,6 +110,28 @@ export default function TraceVueClient({
           onMeteoSupprimee={handleMeteoSupprimee}
         />
       </div>
+        <BarreOutils
+          actions={[
+            {
+              id: "nettoyer",
+              icone: <Eraser />,
+              label: "Nettoyer la trace",
+              onClick: () => routeur.push(`/trace/${traceId}/nettoyage`),
+            },
+            {
+              id: "editer",
+              icone: <Pencil />,
+              label: "Editer la trace",
+              onClick: () => { /* TODO: popover edition */ },
+            },
+            {
+              id: "lier-nav",
+              icone: <Link2 />,
+              label: "Lier a une navigation",
+              onClick: () => { /* TODO: creer/associer navigation */ },
+            },
+          ]}
+        />
       </div>
 
       {pointActif && (

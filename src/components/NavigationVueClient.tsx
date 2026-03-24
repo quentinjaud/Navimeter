@@ -16,6 +16,8 @@ import { trouverCelluleActive } from "@/lib/geo/stats-vent";
 import type { PointCarte, CelluleMeteoClient, StatsVent } from "@/lib/types";
 import { useEtatVue, HAUTEUR_GRAPHIQUE_INITIALE } from "@/lib/hooks/useEtatVue";
 import { COULEURS } from "@/lib/theme";
+import BarreOutils from "@/components/BarreOutils";
+import { Share2, Pencil } from "lucide-react";
 
 /** Couleur d'accent par type de navigation */
 const ACCENT_PAR_TYPE: Record<string, string> = {
@@ -272,6 +274,22 @@ export default function NavigationVueClient({
           onReduitChange={setStatsReduit}
         />
       </div>
+        <BarreOutils
+          actions={[
+            {
+              id: "partager",
+              icone: <Share2 />,
+              label: "Partager cette navigation",
+              onClick: () => { /* TODO lot 10: generer lien partage */ },
+            },
+            {
+              id: "editer",
+              icone: <Pencil />,
+              label: "Editer les metadonnees",
+              onClick: () => { /* TODO: popover edition meta */ },
+            },
+          ]}
+        />
       </div>
 
       {pointActif && (

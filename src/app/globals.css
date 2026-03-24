@@ -1383,6 +1383,51 @@ body {
   border-radius: 10px;
 }
 
+/* Barre d'outils flottante — sous le panneau stats */
+.barre-outils {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  background: rgba(255, 253, 249, 0.92);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.barre-outils-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.barre-outils-btn:hover {
+  background: var(--border-light);
+  color: var(--foreground);
+}
+
+.barre-outils-btn.actif {
+  background: var(--accent-nav, var(--accent));
+  color: white;
+}
+
+.barre-outils-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
 /* Panneau stats compact — lignes horizontales */
 .panneau-stats-compact {
   display: flex;
