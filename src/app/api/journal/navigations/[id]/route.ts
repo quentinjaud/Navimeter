@@ -3,6 +3,68 @@ import { prisma } from "@/lib/db";
 import { obtenirSession, obtenirIdUtilisateurEffectif } from "@/lib/session";
 import { journalErreur } from "@/lib/journal";
 
+export async function GET(
+  _requete: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await obtenirSession();
+  if (!session) {
+    return NextResponse.json({ error: "Non authentifie" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const userId = await obtenirIdUtilisateurEffectif(session);
+
+  try {
+    const navigation = await prisma.navigation.findFirst({
+      where: { id, userId },
+      include: {
+        trace: {
+          select: {
+            id: true,
+            name: true,
+            distanceNm: true,
+            durationSeconds: true,
+            avgSpeedKn: true,
+            maxSpeedKn: true,
+            polylineSimplifiee: true,
+            bateau: { select: { id: true, nom: true } },
+          },
+        },
+        sousNavigations: {
+          orderBy: { date: "desc" },
+          include: {
+            trace: {
+              select: {
+                id: true,
+                name: true,
+                distanceNm: true,
+                durationSeconds: true,
+                avgSpeedKn: true,
+                maxSpeedKn: true,
+                polylineSimplifiee: true,
+                bateau: { select: { id: true, nom: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!navigation) {
+      return NextResponse.json(
+        { error: "Navigation non trouvee" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(navigation);
+  } catch (erreur) {
+    journalErreur("GET /api/journal/navigations/[id]", erreur);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
+}
+
 export async function PATCH(
   requete: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -27,13 +89,13 @@ export async function PATCH(
   }
 
   try {
-    const { nom, date, type, aventureId, traceId } = await requete.json();
+    const { nom, date, type, parentNavId, traceId } = await requete.json();
 
     const data: {
       nom?: string;
       date?: Date;
-      type?: "SOLO" | "REGATE";
-      aventureId?: string | null;
+      type?: "SOLO" | "AVENTURE" | "REGATE";
+      parentNavId?: string | null;
       traceId?: string | null;
     } = {};
 
@@ -49,26 +111,13 @@ export async function PATCH(
     }
 
     if (type !== undefined) {
-      data.type = type === "REGATE" ? "REGATE" : "SOLO";
+      if (["SOLO", "AVENTURE", "REGATE"].includes(type)) {
+        data.type = type;
+      }
     }
 
-    if (aventureId !== undefined) {
-      if (aventureId === null || aventureId === "") {
-        data.aventureId = null;
-      } else {
-        const aventure = await prisma.aventure.findFirst({
-          where: { id: aventureId, userId, dossierId: navigation.dossierId },
-        });
-
-        if (!aventure) {
-          return NextResponse.json(
-            { error: "Aventure non trouvee" },
-            { status: 404 }
-          );
-        }
-
-        data.aventureId = aventureId;
-      }
+    if (parentNavId !== undefined) {
+      data.parentNavId = parentNavId || null;
     }
 
     if (traceId !== undefined) {
@@ -112,7 +161,7 @@ export async function PATCH(
       date: miseAJour.date.toISOString(),
       type: miseAJour.type,
       dossierId: miseAJour.dossierId,
-      aventureId: miseAJour.aventureId,
+      parentNavId: miseAJour.parentNavId,
       traceId: miseAJour.traceId,
       createdAt: miseAJour.createdAt.toISOString(),
     });

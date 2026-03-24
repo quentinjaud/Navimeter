@@ -8,16 +8,14 @@ interface PropsModaleElement {
   ouvert: boolean;
   onFermer: () => void;
   onValider: (donnees: Record<string, unknown>) => void;
-  type: "dossier" | "aventure" | "navigation";
+  type: "dossier" | "navigation";
   edition?: Record<string, unknown> | null;
   dossierId?: string;
-  aventureId?: string | null;
   tracesDisponibles?: ResumeTrace[];
 }
 
 const LABELS: Record<string, { nouveau: string; modifier: string }> = {
   dossier: { nouveau: "Nouveau dossier", modifier: "Modifier le dossier" },
-  aventure: { nouveau: "Nouvelle aventure", modifier: "Modifier l\u2019aventure" },
   navigation: { nouveau: "Nouvelle navigation", modifier: "Modifier la navigation" },
 };
 
@@ -28,7 +26,6 @@ export default function ModaleElement({
   type,
   edition,
   dossierId,
-  aventureId,
   tracesDisponibles = [],
 }: PropsModaleElement) {
   const [nom, setNom] = useState("");
@@ -79,12 +76,6 @@ export default function ModaleElement({
 
     if (type === "dossier") {
       onValider({ nom: nom.trim(), description: description.trim() || null });
-    } else if (type === "aventure") {
-      onValider({
-        nom: nom.trim(),
-        description: description.trim() || null,
-        dossierId,
-      });
     } else {
       onValider({
         nom: nom.trim(),
@@ -92,7 +83,6 @@ export default function ModaleElement({
         type: typeNav,
         traceId: traceId || null,
         dossierId,
-        aventureId: aventureId ?? null,
       });
     }
   };
@@ -108,7 +98,7 @@ export default function ModaleElement({
           autoFocus
         />
 
-        {(type === "dossier" || type === "aventure") && (
+        {type === "dossier" && (
           <Textarea
             label="Description"
             value={description}
@@ -132,6 +122,7 @@ export default function ModaleElement({
               onChange={(e) => setTypeNav(e.currentTarget.value)}
               data={[
                 { value: "SOLO", label: "Solo" },
+                { value: "AVENTURE", label: "Aventure" },
                 { value: "REGATE", label: "Régate" },
               ]}
             />

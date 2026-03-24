@@ -6,7 +6,6 @@ import type {
   ResumeDossier,
   ResumeBateau,
   ResumeTrace,
-  ResumeAventure,
   ResumeNavigation,
   ContenuDossier,
 } from "@/lib/types";
@@ -23,16 +22,14 @@ interface PropsPageJournal {
 }
 
 type ElementSurvole =
-  | { type: "aventure"; element: ResumeAventure }
   | { type: "navigation"; element: ResumeNavigation }
   | { type: null };
 
 type ModaleConfig = {
   ouvert: boolean;
-  type: "dossier" | "aventure" | "navigation";
+  type: "dossier" | "navigation";
   edition: Record<string, unknown> | null;
   dossierId?: string;
-  aventureId?: string | null;
 };
 
 export default function PageJournal({
@@ -115,21 +112,6 @@ export default function PageJournal({
               body: JSON.stringify(donnees),
             });
           }
-        } else if (type === "aventure") {
-          if (edition) {
-            await fetch(`/api/journal/aventures/${edition.id}`, {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(donnees),
-            });
-          } else {
-            await fetch(`/api/journal/dossiers/${dossierId}/aventures`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(donnees),
-            });
-          }
-          if (dossierId) await invaliderCache(dossierId);
         } else if (type === "navigation") {
           if (edition) {
             await fetch(`/api/journal/navigations/${edition.id}`, {
@@ -156,10 +138,9 @@ export default function PageJournal({
   );
 
   const handleSupprimer = useCallback(
-    async (type: "dossier" | "aventure" | "navigation", id: string, dossierId?: string) => {
+    async (type: "dossier" | "navigation", id: string, dossierId?: string) => {
       const messages: Record<string, string> = {
-        dossier: "Supprimer ce dossier et tout son contenu (aventures, navigations) ?",
-        aventure: "Supprimer cette aventure et ses navigations ?",
+        dossier: "Supprimer ce dossier et tout son contenu (sous-dossiers, navigations) ?",
         navigation: "Supprimer cette navigation ?",
       };
 
@@ -167,7 +148,6 @@ export default function PageJournal({
 
       const urls: Record<string, string> = {
         dossier: `/api/journal/dossiers/${id}`,
-        aventure: `/api/journal/aventures/${id}`,
         navigation: `/api/journal/navigations/${id}`,
       };
 
@@ -189,16 +169,9 @@ export default function PageJournal({
         return true;
       };
 
-      const navigationsOrphelines = contenu.navigationsOrphelines.filter(filtrerNavigation);
+      const navigations = contenu.navigations.filter(filtrerNavigation);
 
-      const aventures = contenu.aventures
-        .map((a) => ({
-          ...a,
-          navigations: a.navigations.filter(filtrerNavigation),
-        }))
-        .filter((a) => a.navigations.length > 0);
-
-      return { aventures, navigationsOrphelines };
+      return { sousDossiers: contenu.sousDossiers, navigations };
     },
     [filtreBateau, filtreType]
   );
@@ -250,33 +223,13 @@ export default function PageJournal({
                     onSurvolNavigation={(n) =>
                       setSurvol(n ? { type: "navigation", element: n } : { type: null })
                     }
-                    onAjouterAventure={() =>
-                      setModale({
-                        ouvert: true,
-                        type: "aventure",
-                        edition: null,
-                        dossierId: dossier.id,
-                      })
-                    }
-                    onAjouterNavigation={(aventureId) =>
+                    onAjouterNavigation={() =>
                       setModale({
                         ouvert: true,
                         type: "navigation",
                         edition: null,
                         dossierId: dossier.id,
-                        aventureId,
                       })
-                    }
-                    onEditerAventure={(a) =>
-                      setModale({
-                        ouvert: true,
-                        type: "aventure",
-                        edition: a as unknown as Record<string, unknown>,
-                        dossierId: dossier.id,
-                      })
-                    }
-                    onSupprimerAventure={(id) =>
-                      handleSupprimer("aventure", id, dossier.id)
                     }
                     onEditerNavigation={(n) =>
                       setModale({
@@ -287,7 +240,6 @@ export default function PageJournal({
                           traceId: n.trace?.id ?? null,
                         },
                         dossierId: dossier.id,
-                        aventureId: n.aventureId,
                       })
                     }
                     onSupprimerNavigation={(id) =>
@@ -316,7 +268,6 @@ export default function PageJournal({
         type={modale.type}
         edition={modale.edition}
         dossierId={modale.dossierId}
-        aventureId={modale.aventureId}
         tracesDisponibles={tracesDisponibles}
       />
     </div>

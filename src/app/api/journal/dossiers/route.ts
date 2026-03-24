@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { obtenirSession, obtenirIdUtilisateurEffectif } from "@/lib/session";
 import { journalErreur } from "@/lib/journal";
+import { prochainPointSnap, NOM_DOSSIER_DEFAUT, POSITION_DOSSIER_DEFAUT } from "@/lib/pointsSnap";
 import type { ResumeDossier } from "@/lib/types";
 
 export async function GET(_requete: NextRequest) {
@@ -13,17 +14,46 @@ export async function GET(_requete: NextRequest) {
   const userId = await obtenirIdUtilisateurEffectif(session);
 
   try {
+    // Auto-creer le dossier "Non classes" si l'utilisateur n'en a pas
+    const dossierDefaut = await prisma.dossier.findFirst({
+      where: { userId, nom: NOM_DOSSIER_DEFAUT },
+    });
+
+    if (!dossierDefaut) {
+      await prisma.dossier.create({
+        data: {
+          nom: NOM_DOSSIER_DEFAUT,
+          description: null,
+          markerLat: POSITION_DOSSIER_DEFAUT.lat,
+          markerLon: POSITION_DOSSIER_DEFAUT.lon,
+          userId,
+        },
+      });
+    }
+
     const dossiers = await prisma.dossier.findMany({
-      where: { userId },
+      where: { userId, parentId: null },
       orderBy: { createdAt: "desc" },
-      include: { _count: { select: { aventures: true, navigations: true } } },
+      select: {
+        id: true,
+        nom: true,
+        description: true,
+        markerLat: true,
+        markerLon: true,
+        parentId: true,
+        createdAt: true,
+        _count: { select: { sousDossiers: true, navigations: true } },
+      },
     });
 
     const resultat: ResumeDossier[] = dossiers.map((d) => ({
       id: d.id,
       nom: d.nom,
       description: d.description,
-      nbAventures: d._count.aventures,
+      markerLat: d.markerLat,
+      markerLon: d.markerLon,
+      parentId: d.parentId,
+      nbSousDossiers: d._count.sousDossiers,
       nbNavigations: d._count.navigations,
       createdAt: d.createdAt.toISOString(),
     }));
@@ -44,16 +74,35 @@ export async function POST(requete: NextRequest) {
   const userId = await obtenirIdUtilisateurEffectif(session);
 
   try {
-    const { nom, description } = await requete.json();
+    const { nom, description, markerLat, markerLon } = await requete.json();
 
     if (!nom || typeof nom !== "string" || nom.trim().length === 0) {
       return NextResponse.json({ error: "Nom requis" }, { status: 400 });
+    }
+
+    let lat = markerLat;
+    let lon = markerLon;
+
+    if (lat == null || lon == null) {
+      // Trouver un point snap libre
+      const existants = await prisma.dossier.findMany({
+        where: { userId, markerLat: { not: null }, markerLon: { not: null } },
+        select: { markerLat: true, markerLon: true },
+      });
+      const positionsUtilisees = existants
+        .filter((d): d is { markerLat: number; markerLon: number } => d.markerLat !== null && d.markerLon !== null)
+        .map((d) => ({ lat: d.markerLat, lon: d.markerLon }));
+      const snap = prochainPointSnap(positionsUtilisees);
+      lat = snap.lat;
+      lon = snap.lon;
     }
 
     const dossier = await prisma.dossier.create({
       data: {
         nom: nom.trim(),
         description: description?.trim() || null,
+        markerLat: lat,
+        markerLon: lon,
         userId,
       },
     });
@@ -62,7 +111,10 @@ export async function POST(requete: NextRequest) {
       id: dossier.id,
       nom: dossier.nom,
       description: dossier.description,
-      nbAventures: 0,
+      markerLat: dossier.markerLat,
+      markerLon: dossier.markerLon,
+      parentId: dossier.parentId,
+      nbSousDossiers: 0,
       nbNavigations: 0,
       createdAt: dossier.createdAt.toISOString(),
     };

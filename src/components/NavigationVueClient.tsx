@@ -20,7 +20,7 @@ interface PropsNavigationVueClient {
   navigationId: string;
   nom: string;
   date: string;
-  type: "SOLO" | "REGATE";
+  type: "SOLO" | "AVENTURE" | "REGATE";
   bateau: { id: string; nom: string } | null;
   breadcrumb: string;
   points: PointCarte[];

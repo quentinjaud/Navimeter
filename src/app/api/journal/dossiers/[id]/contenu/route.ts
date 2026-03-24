@@ -4,7 +4,7 @@ import { obtenirSession, obtenirIdUtilisateurEffectif } from "@/lib/session";
 import { journalErreur } from "@/lib/journal";
 import type {
   ResumeNavigation,
-  ResumeAventure,
+  ResumeDossier,
   ContenuDossier,
 } from "@/lib/types";
 
@@ -29,72 +29,71 @@ export async function GET(
   }
 
   try {
-    const selectTrace = {
-      id: true,
-      name: true,
-      distanceNm: true,
-      durationSeconds: true,
-      avgSpeedKn: true,
-      maxSpeedKn: true,
-      polylineSimplifiee: true,
-      bateau: { select: { id: true, nom: true } },
-    };
-
-    const selectNavigation = {
-      id: true,
-      nom: true,
-      date: true,
-      type: true,
-      dossierId: true,
-      aventureId: true,
-      createdAt: true,
-      trace: { select: selectTrace },
-    };
-
-    const [aventures, navigationsOrphelines] = await Promise.all([
-      prisma.aventure.findMany({
-        where: { dossierId: id },
+    const [sousDossiers, navigations] = await Promise.all([
+      prisma.dossier.findMany({
+        where: { parentId: id },
         orderBy: { createdAt: "desc" },
-        include: {
-          navigations: {
-            orderBy: { date: "desc" },
-            select: selectNavigation,
-          },
+        select: {
+          id: true,
+          nom: true,
+          description: true,
+          markerLat: true,
+          markerLon: true,
+          parentId: true,
+          createdAt: true,
+          _count: { select: { sousDossiers: true, navigations: true } },
         },
       }),
       prisma.navigation.findMany({
-        where: { dossierId: id, aventureId: null },
+        where: { dossierId: id, parentNavId: null },
         orderBy: { date: "desc" },
-        select: selectNavigation,
+        select: {
+          id: true,
+          nom: true,
+          date: true,
+          type: true,
+          dossierId: true,
+          parentNavId: true,
+          polylineCache: true,
+          createdAt: true,
+          _count: { select: { sousNavigations: true } },
+          trace: {
+            select: {
+              id: true,
+              name: true,
+              distanceNm: true,
+              durationSeconds: true,
+              avgSpeedKn: true,
+              maxSpeedKn: true,
+              polylineSimplifiee: true,
+              bateau: { select: { id: true, nom: true } },
+            },
+          },
+        },
       }),
     ]);
 
-    function formaterNavigation(nav: {
-      id: string;
-      nom: string;
-      date: Date;
-      type: string;
-      dossierId: string;
-      aventureId: string | null;
-      createdAt: Date;
-      trace: {
-        id: string;
-        name: string;
-        distanceNm: number | null;
-        durationSeconds: number | null;
-        avgSpeedKn: number | null;
-        maxSpeedKn: number | null;
-        polylineSimplifiee: unknown;
-        bateau: { id: string; nom: string } | null;
-      } | null;
-    }): ResumeNavigation {
-      return {
+    const resultat: ContenuDossier = {
+      sousDossiers: sousDossiers.map((d): ResumeDossier => ({
+        id: d.id,
+        nom: d.nom,
+        description: d.description,
+        markerLat: d.markerLat,
+        markerLon: d.markerLon,
+        parentId: d.parentId,
+        nbSousDossiers: d._count.sousDossiers,
+        nbNavigations: d._count.navigations,
+        createdAt: d.createdAt.toISOString(),
+      })),
+      navigations: navigations.map((nav): ResumeNavigation => ({
         id: nav.id,
         nom: nav.nom,
         date: nav.date.toISOString(),
-        type: nav.type as "SOLO" | "REGATE",
+        type: nav.type as "SOLO" | "AVENTURE" | "REGATE",
         dossierId: nav.dossierId,
-        aventureId: nav.aventureId,
+        parentNavId: nav.parentNavId,
+        nbSousNavs: nav._count.sousNavigations,
+        polylineCache: (nav.polylineCache as [number, number][] | null) ?? null,
         trace: nav.trace
           ? {
               id: nav.trace.id,
@@ -110,20 +109,7 @@ export async function GET(
             }
           : null,
         createdAt: nav.createdAt.toISOString(),
-      };
-    }
-
-    const resultat: ContenuDossier = {
-      aventures: aventures.map(
-        (a): ResumeAventure => ({
-          id: a.id,
-          nom: a.nom,
-          description: a.description,
-          navigations: a.navigations.map(formaterNavigation),
-          createdAt: a.createdAt.toISOString(),
-        })
-      ),
-      navigationsOrphelines: navigationsOrphelines.map(formaterNavigation),
+      })),
     };
 
     return NextResponse.json(resultat);

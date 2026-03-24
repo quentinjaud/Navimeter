@@ -12,7 +12,7 @@ export async function POST(requete: NextRequest) {
   const userId = await obtenirIdUtilisateurEffectif(session);
 
   try {
-    const { nom, date, type, dossierId, aventureId, traceId } =
+    const { nom, date, type, dossierId, parentNavId, traceId } =
       await requete.json();
 
     if (!nom || typeof nom !== "string" || nom.trim().length === 0) {
@@ -38,14 +38,14 @@ export async function POST(requete: NextRequest) {
       return NextResponse.json({ error: "Dossier non trouve" }, { status: 404 });
     }
 
-    if (aventureId) {
-      const aventure = await prisma.aventure.findFirst({
-        where: { id: aventureId, userId, dossierId },
+    if (parentNavId) {
+      const parentNav = await prisma.navigation.findFirst({
+        where: { id: parentNavId, userId, dossierId },
       });
 
-      if (!aventure) {
+      if (!parentNav) {
         return NextResponse.json(
-          { error: "Aventure non trouvee" },
+          { error: "Navigation parente non trouvee" },
           { status: 404 }
         );
       }
@@ -72,16 +72,16 @@ export async function POST(requete: NextRequest) {
       }
     }
 
-    const typeNavigation = type === "REGATE" ? "REGATE" : "SOLO";
+    const typeValide = ["SOLO", "AVENTURE", "REGATE"].includes(type) ? type : "SOLO";
 
     const navigation = await prisma.navigation.create({
       data: {
         nom: nom.trim(),
         date: new Date(date),
-        type: typeNavigation,
+        type: typeValide,
         userId,
         dossierId,
-        aventureId: aventureId || null,
+        parentNavId: parentNavId || null,
         traceId: traceId || null,
       },
     });
@@ -93,7 +93,7 @@ export async function POST(requete: NextRequest) {
         date: navigation.date.toISOString(),
         type: navigation.type,
         dossierId: navigation.dossierId,
-        aventureId: navigation.aventureId,
+        parentNavId: navigation.parentNavId,
         traceId: navigation.traceId,
         createdAt: navigation.createdAt.toISOString(),
       },

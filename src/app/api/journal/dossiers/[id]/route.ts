@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { obtenirSession, obtenirIdUtilisateurEffectif } from "@/lib/session";
 import { journalErreur } from "@/lib/journal";
+import { NOM_DOSSIER_DEFAUT } from "@/lib/pointsSnap";
 
 export async function PATCH(
   requete: NextRequest,
@@ -24,9 +25,15 @@ export async function PATCH(
   }
 
   try {
-    const { nom, description } = await requete.json();
+    const { nom, description, markerLat, markerLon, parentId } = await requete.json();
 
-    const data: { nom?: string; description?: string | null } = {};
+    const data: {
+      nom?: string;
+      description?: string | null;
+      markerLat?: number | null;
+      markerLon?: number | null;
+      parentId?: string | null;
+    } = {};
 
     if (nom !== undefined) {
       if (typeof nom !== "string" || nom.trim().length === 0) {
@@ -39,6 +46,18 @@ export async function PATCH(
       data.description = description?.trim() || null;
     }
 
+    if (markerLat !== undefined) {
+      data.markerLat = markerLat;
+    }
+
+    if (markerLon !== undefined) {
+      data.markerLon = markerLon;
+    }
+
+    if (parentId !== undefined) {
+      data.parentId = parentId;
+    }
+
     const miseAJour = await prisma.dossier.update({
       where: { id },
       data,
@@ -48,6 +67,9 @@ export async function PATCH(
       id: miseAJour.id,
       nom: miseAJour.nom,
       description: miseAJour.description,
+      markerLat: miseAJour.markerLat,
+      markerLon: miseAJour.markerLon,
+      parentId: miseAJour.parentId,
       createdAt: miseAJour.createdAt.toISOString(),
     });
   } catch (erreur) {
@@ -77,6 +99,13 @@ export async function DELETE(
 
   if (!dossier) {
     return NextResponse.json({ error: "Dossier non trouve" }, { status: 404 });
+  }
+
+  if (dossier.nom === NOM_DOSSIER_DEFAUT) {
+    return NextResponse.json(
+      { error: "Impossible de supprimer le dossier par defaut" },
+      { status: 403 }
+    );
   }
 
   try {

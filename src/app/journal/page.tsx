@@ -23,9 +23,18 @@ export default async function PageJournalServeur() {
   try {
     const [resultDossiers, resultBateaux, resultTraces] = await Promise.all([
       prisma.dossier.findMany({
-        where: { userId },
+        where: { userId, parentId: null },
         orderBy: { createdAt: "desc" },
-        include: { _count: { select: { aventures: true, navigations: true } } },
+        select: {
+          id: true,
+          nom: true,
+          description: true,
+          markerLat: true,
+          markerLon: true,
+          parentId: true,
+          createdAt: true,
+          _count: { select: { sousDossiers: true, navigations: true } },
+        },
       }),
       prisma.bateau.findMany({
         where: { userId },
@@ -46,7 +55,8 @@ export default async function PageJournalServeur() {
 
     dossiers = resultDossiers.map((d) => ({
       id: d.id, nom: d.nom, description: d.description,
-      nbAventures: d._count.aventures, nbNavigations: d._count.navigations,
+      markerLat: d.markerLat, markerLon: d.markerLon, parentId: d.parentId,
+      nbSousDossiers: d._count.sousDossiers, nbNavigations: d._count.navigations,
       createdAt: d.createdAt.toISOString(),
     }));
 

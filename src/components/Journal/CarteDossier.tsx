@@ -21,11 +21,11 @@ export default function CarteDossier({
   children,
 }: PropsCarteDossier) {
   const compteurs =
-    dossier.nbAventures === 0 && dossier.nbNavigations === 0
+    dossier.nbSousDossiers === 0 && dossier.nbNavigations === 0
       ? "Vide"
       : [
-          dossier.nbAventures > 0
-            ? `${dossier.nbAventures} aventure${dossier.nbAventures > 1 ? "s" : ""}`
+          dossier.nbSousDossiers > 0
+            ? `${dossier.nbSousDossiers} sous-dossier${dossier.nbSousDossiers > 1 ? "s" : ""}`
             : null,
           dossier.nbNavigations > 0
             ? `${dossier.nbNavigations} navigation${dossier.nbNavigations > 1 ? "s" : ""}`

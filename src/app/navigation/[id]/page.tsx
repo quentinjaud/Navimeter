@@ -26,7 +26,7 @@ export default async function NavigationDetailPage({ params }: PropsPage) {
 
   const include = {
     dossier: { select: { id: true, nom: true } },
-    aventure: { select: { id: true, nom: true } },
+    parentNav: { select: { id: true, nom: true } },
     trace: {
       include: {
         points: {
@@ -106,7 +106,7 @@ export default async function NavigationDetailPage({ params }: PropsPage) {
           date={(premierTs ?? navigation.date).toISOString()}
           type={navigation.type}
           bateau={trace.bateau}
-          breadcrumb={`${navigation.dossier.nom}${navigation.aventure ? ` > ${navigation.aventure.nom}` : ""}`}
+          breadcrumb={`${navigation.dossier.nom}${navigation.parentNav ? ` > ${navigation.parentNav.nom}` : ""}`}
           points={pointsSerialises}
           maxSpeed={trace.maxSpeedKn ?? 10}
           distanceNm={trace.distanceNm}
