@@ -1370,13 +1370,6 @@ body {
   grid-template-rows: auto 1fr;
 }
 
-.trace-vue-squiggle {
-  position: absolute;
-  top: -6px;
-  left: -10px;
-  z-index: 2;
-}
-
 .trace-vue-stats {
   background: rgba(255, 253, 249, 0.92);
   backdrop-filter: blur(8px);
@@ -1386,8 +1379,7 @@ body {
 }
 
 /* Sans breadcrumb (vue trace), le stats reprend son radius haut */
-.trace-vue-stats-wrapper > .trace-vue-stats:first-child,
-.trace-vue-squiggle + .trace-vue-stats {
+.trace-vue-stats-wrapper > .trace-vue-stats:first-child {
   border-radius: 10px;
 }
 
@@ -2785,35 +2777,13 @@ body {
   color: var(--text-secondary);
 }
 
-.navigation-retour {
-  position: absolute;
-  top: 0;
-  left: calc(100% + 8px);
-  z-index: 12;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border-radius: 20px;
-  background: var(--accent-yellow);
-  color: var(--text);
-  font-size: 12px;
-  font-weight: 500;
-  text-decoration: none;
-  backdrop-filter: blur(4px);
-  transition: background 0.15s;
-}
-
-.navigation-retour:hover {
-  background: var(--accent-yellow-dark);
-}
 
 
 .navigation-breadcrumb-flottant {
   font-size: 9px;
   color: white;
   background: rgba(0, 0, 0, 0.5);
-  padding: 3px 10px 3px 29px;
+  padding: 3px 10px 3px 42px;
   border-radius: 10px 10px 0 0;
   letter-spacing: 0.3px;
   overflow: hidden;

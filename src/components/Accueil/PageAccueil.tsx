@@ -121,7 +121,7 @@ export default function PageAccueil({ dossiers }: PropsPageAccueil) {
         {/* Panneau dossiers */}
         <div className="accueil-panneau-dossiers">
           <div className="accueil-panneau-header">
-            <h2 className="accueil-panneau-titre">Mes dossiers</h2>
+            <h2 className="accueil-panneau-titre">Mes journaux de bord</h2>
           </div>
 
           {dossiers.length === 0 ? (

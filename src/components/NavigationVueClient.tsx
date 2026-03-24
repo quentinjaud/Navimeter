@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+
 import TraceMapWrapper from "@/components/Map/TraceMapWrapper";
 import TraceChart from "@/components/Stats/TraceChart";
 import PanneauStats from "@/components/Stats/PanneauStats";
@@ -169,10 +169,6 @@ export default function NavigationVueClient({
     <div style={{ "--hauteur-graphique": `${paddingBas}px` } as React.CSSProperties}>
       {/* Squiggle + breadcrumb + panneau stats */}
       <div className="trace-vue-stats-wrapper">
-        <Link href="/journal" className="navigation-retour" title="Retour au journal">
-          <ArrowLeft style={{ width: 14, height: 14 }} />
-          Journal
-        </Link>
         {!statsReduit && (
           <div className="navigation-breadcrumb-flottant">
             {breadcrumb.includes(" > ") ? (
