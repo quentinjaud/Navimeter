@@ -23,7 +23,6 @@ model User {
   traces        Trace[]
   bateaux       Bateau[]
   dossiers      Dossier[]
-  aventures     Aventure[]
   navigations   Navigation[]
 }
 
@@ -145,56 +144,46 @@ model CelluleMeteo {
 
 enum TypeNavigation {
   SOLO
+  AVENTURE
   REGATE
 }
 
 model Dossier {
-  id          String       @id @default(cuid())
-  nom         String
-  description String?
-  userId      String
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  aventures   Aventure[]
-  navigations Navigation[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id           String       @id @default(cuid())
+  nom          String
+  description  String?
+  markerLat    Float?
+  markerLon    Float?
+  parentId     String?
+  parent       Dossier?     @relation("DossierParent", fields: [parentId], references: [id])
+  sousDossiers Dossier[]    @relation("DossierParent")
+  userId       String
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  navigations  Navigation[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
-  @@index([userId])
-}
-
-model Aventure {
-  id          String       @id @default(cuid())
-  nom         String
-  description String?
-  userId      String
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  dossierId   String
-  dossier     Dossier      @relation(fields: [dossierId], references: [id], onDelete: Cascade)
-  navigations Navigation[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-
-  @@index([dossierId])
   @@index([userId])
 }
 
 model Navigation {
-  id         String         @id @default(cuid())
-  nom        String
-  date       DateTime
-  type       TypeNavigation @default(SOLO)
-  userId     String
-  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  dossierId  String
-  dossier    Dossier        @relation(fields: [dossierId], references: [id], onDelete: Cascade)
-  aventureId String?
-  aventure   Aventure?      @relation(fields: [aventureId], references: [id], onDelete: Cascade)
-  traceId    String?        @unique
-  trace      Trace?         @relation(fields: [traceId], references: [id], onDelete: SetNull)
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
+  id               String         @id @default(cuid())
+  nom              String
+  date             DateTime
+  type             TypeNavigation @default(SOLO)
+  userId           String
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dossierId        String
+  dossier          Dossier        @relation(fields: [dossierId], references: [id], onDelete: Cascade)
+  parentNavId      String?
+  parentNav        Navigation?    @relation("NavParent", fields: [parentNavId], references: [id])
+  sousNavigations  Navigation[]   @relation("NavParent")
+  traceId          String?        @unique
+  trace            Trace?         @relation(fields: [traceId], references: [id], onDelete: SetNull)
+  polylineCache    Json?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
   @@index([dossierId])
-  @@index([aventureId])
   @@index([userId])
 }
