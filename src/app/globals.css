@@ -24,6 +24,10 @@
   --accent-green: #2e7d32;
   --accent-green-light: #e8f5e9;
 
+  /* Accents types navigation */
+  --accent-aventure: #C45B3E;
+  --accent-trace-edition: #9E9E9E;
+
   /* Sémantiques */
   --success: #0f7b6c;
   --danger: #e03e3e;

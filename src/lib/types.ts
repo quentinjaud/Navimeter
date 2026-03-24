@@ -145,16 +145,11 @@ export interface ResumeDossier {
   id: string;
   nom: string;
   description: string | null;
-  nbAventures: number;
+  markerLat: number | null;
+  markerLon: number | null;
+  parentId: string | null;
+  nbSousDossiers: number;
   nbNavigations: number;
-  createdAt: string;
-}
-
-export interface ResumeAventure {
-  id: string;
-  nom: string;
-  description: string | null;
-  navigations: ResumeNavigation[];
   createdAt: string;
 }
 
@@ -173,14 +168,16 @@ export interface ResumeNavigation {
   id: string;
   nom: string;
   date: string;
-  type: "SOLO" | "REGATE";
+  type: "SOLO" | "AVENTURE" | "REGATE";
   dossierId: string;
-  aventureId: string | null;
+  parentNavId: string | null;
+  nbSousNavs: number;
   trace: ResumeTraceNavigation | null;
+  polylineCache: [number, number][] | null;
   createdAt: string;
 }
 
 export interface ContenuDossier {
-  aventures: ResumeAventure[];
-  navigationsOrphelines: ResumeNavigation[];
+  sousDossiers: ResumeDossier[];
+  navigations: ResumeNavigation[];
 }
