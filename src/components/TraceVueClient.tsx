@@ -10,6 +10,10 @@ import RoseDesVents from "@/components/Map/RoseDesVents";
 import { trouverCelluleActive } from "@/lib/geo/stats-vent";
 import type { PointCarte, CelluleMeteoClient, StatsVent } from "@/lib/types";
 import { useEtatVue, HAUTEUR_GRAPHIQUE_INITIALE } from "@/lib/hooks/useEtatVue";
+import { useZoomTemporel } from "@/lib/hooks/useZoomTemporel";
+import BarreOutils from "@/components/BarreOutils";
+import { Eraser, Pencil, Link2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface PropsTraceVueClient {
   traceId: string;
@@ -51,6 +55,11 @@ export default function TraceVueClient({
     handleHauteurChange,
   } = useEtatVue(points);
 
+  const {
+    debutZoom, finZoom, isZoomed, pointsFiltres,
+    setPlage, resetZoom,
+  } = useZoomTemporel(points);
+
   const [cellulesMeteoState, setCellulesMeteoState] = useState(cellulesMeteo ?? []);
   const [statsVentState, setStatsVentState] = useState(statsVent ?? null);
   const [mapBearing, setMapBearing] = useState(0);
@@ -88,6 +97,8 @@ export default function TraceVueClient({
     return trouverCelluleActive(cellulesMeteoState, pointActif.timestamp, pointActif.lat, pointActif.lon);
   }, [cellulesMeteoState, pointActif]);
 
+  const routeur = useRouter();
+
   return (
     <div style={{ "--hauteur-graphique": `${paddingBas}px` } as React.CSSProperties}>
       <div className="trace-vue-stats-wrapper">
@@ -105,6 +116,28 @@ export default function TraceVueClient({
           onMeteoSupprimee={handleMeteoSupprimee}
         />
       </div>
+        <BarreOutils
+          actions={[
+            {
+              id: "nettoyer",
+              icone: <Eraser />,
+              label: "Nettoyer la trace",
+              onClick: () => routeur.push(`/trace/${traceId}/nettoyage`),
+            },
+            {
+              id: "editer",
+              icone: <Pencil />,
+              label: "Editer la trace",
+              onClick: () => { /* TODO: popover edition */ },
+            },
+            {
+              id: "lier-nav",
+              icone: <Link2 />,
+              label: "Lier a une navigation",
+              onClick: () => { /* TODO: creer/associer navigation */ },
+            },
+          ]}
+        />
       </div>
 
       {pointActif && (
@@ -121,7 +154,7 @@ export default function TraceVueClient({
 
       <div className="trace-vue-carte">
         <TraceMapWrapper
-          points={points}
+          points={isZoomed ? pointsFiltres : points}
           maxSpeed={maxSpeed}
           paddingBottom={paddingBas}
           pointActifIndex={pointActifIndex}
@@ -196,6 +229,10 @@ export default function TraceVueClient({
             onHoverPoint={handleHoverPoint}
             onClickPoint={handleClickPoint}
             cellulesMeteo={cellulesMeteoState}
+            rangeDebut={debutZoom}
+            rangeFin={finZoom}
+            onRangeChange={setPlage}
+            onRangeReset={resetZoom}
           />
         </GraphiqueRedimensionnable>
       </div>

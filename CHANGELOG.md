@@ -1,5 +1,73 @@
 # Sillage — Changelog
 
+## v0.6.1 — Session nuit : refactorings, panneaux, UX (2026-03-25)
+
+### Refactorings techniques
+- `creerStyleCarte()` extrait en module partage (`src/lib/maps/style-carte.ts`) — 3 variantes (base, satellite, desaturation)
+- Layer IDs MapLibre centralises (`src/lib/maps/layer-ids.ts`) — plus de strings magiques
+- `TitreEditable` generique avec callback `onSave` optionnel
+
+### Cibles tactiles 44px
+- Chevron arborescence : 32px → 44px
+- Bouton "Ouvrir" barre meta : 36px → 44px
+- Boutons tri/filtre traces + input recherche : min-height 44px
+
+### Couleur d'accent par type de navigation
+- CSS variable `--accent-nav` settee dynamiquement selon le type (SOLO=bleu, AVENTURE=rouge, REGATE=jaune)
+- Badge type (pill) a cote du nom dans NavVue
+- Bordure gauche coloree sur le breadcrumb
+- Couleur bateau dynamique au lieu de #F6BC00 hardcode
+
+### Barre d'outils flottante
+- Composant `BarreOutils` generique (zone A, sous les stats)
+- TraceVue : boutons Nettoyer, Editer, Lier a une navigation
+- NavVue : boutons Partager, Editer meta
+
+### Panneaux flottants (zone D)
+- `PanneauContext` global avec provider dans layout
+- Panneau Traces et Bateaux a droite de l'ecran, ouverts depuis le menu user
+- Fonctionnent sur toutes les vues (accueil, TraceVue, NavVue)
+- Menu user : "Mes traces" et "Mes bateaux" ouvrent les panneaux au lieu de naviguer
+- Nouveau item "Preferences" dans le menu
+
+### Panneau preferences + port d'attache
+- Migration Prisma : `portAttacheLat/Lon/Nom` sur User
+- API `GET/PATCH /api/user/preferences`
+- Panneau preferences avec section port d'attache (nom, coords, bouton placer)
+- Mode clic carte : curseur crosshair, clic = sauvegarde position
+- Marqueur ancre sur la carte pour le port d'attache
+- Centrage carte au demarrage sur le port d'attache si defini
+
+### URLs humanisees
+- Champ `slug` sur Navigation (unique, genere a la creation et au rename)
+- Utilitaire `genererSlug()` (strip accents, lowercase, tirets)
+- Route `/navigation/[id]` accepte ID ou slug
+- Liens dans l'accueil utilisent le slug
+
+### Zoom temporel (Phase 3c)
+- Hook `useZoomTemporel` : plage temporelle (debut/fin timestamps)
+- Double thumb sur TraceChart pour selection de plage
+- Highlight semi-transparent entre les thumbs
+- HUD plage (heure debut → fin, duree, bouton reset)
+- Double-clic = reset du zoom
+- Carte filtre les points quand le zoom est actif
+- Integre dans TraceVue et NavVue
+
+### Entrees journal texte (Phase 3d MVP)
+- Modele `EntreeJournal` (Prisma) : texte, timestamp, lat/lon
+- API CRUD : `GET/POST /navigations/[id]/entrees`, `PATCH/DELETE /entrees/[id]`
+- TimelineJournal : frise chronologique + detail entree + formulaire inline
+- Toggle Journal/Perf dans la barre d'outils NavVue
+- Zone C bascule entre graphique performance et timeline journal
+- Clic sur une entree saute au point GPS correspondant
+
+### Lien de partage public (Phase 7 MVP)
+- Champ `shareToken` sur Navigation (unique, genere a la demande)
+- API `POST /navigations/[id]/partage` : genere/revoque le token
+- Vue publique `/partage/[token]` : carte + stats + graphique + journal (read-only)
+- Bouton Partager dans la barre d'outils NavVue : genere + copie le lien
+- Composant `NavigationPubliqueClient` reutilisant les composants existants
+
 ## v0.6.0 — Refonte accueil carte OSM (2026-03-24)
 
 ### Nouvelle page d'accueil

@@ -15,6 +15,24 @@ import RoseDesVents from "@/components/Map/RoseDesVents";
 import { trouverCelluleActive } from "@/lib/geo/stats-vent";
 import type { PointCarte, CelluleMeteoClient, StatsVent } from "@/lib/types";
 import { useEtatVue, HAUTEUR_GRAPHIQUE_INITIALE } from "@/lib/hooks/useEtatVue";
+import { useZoomTemporel } from "@/lib/hooks/useZoomTemporel";
+import { COULEURS } from "@/lib/theme";
+import BarreOutils from "@/components/BarreOutils";
+import TimelineJournal from "@/components/Journal/TimelineJournal";
+import { Share2, Pencil, BookOpen, BarChart3 } from "lucide-react";
+
+/** Couleur d'accent par type de navigation */
+const ACCENT_PAR_TYPE: Record<string, string> = {
+  SOLO: "var(--accent)",
+  AVENTURE: "var(--accent-aventure)",
+  REGATE: "var(--accent-yellow)",
+};
+
+const LABEL_TYPE: Record<string, string> = {
+  SOLO: "Solo",
+  AVENTURE: "Aventure",
+  REGATE: "Regate",
+};
 
 interface PropsNavigationVueClient {
   navigationId: string;
@@ -68,6 +86,11 @@ export default function NavigationVueClient({
     pointActif,
     handleHauteurChange,
   } = useEtatVue(points);
+
+  const {
+    debutZoom, finZoom, isZoomed, pointsFiltres,
+    setPlage, resetZoom,
+  } = useZoomTemporel(points);
 
   // Edition metadonnees — synchro avec props serveur apres refresh
   const [nomEdite, setNomEdite] = useState(nom);
@@ -138,6 +161,7 @@ export default function NavigationVueClient({
     []
   );
 
+  const [modeVue, setModeVue] = useState<"perf" | "journal">("perf");
   const [ventDeploye, setVentDeploye] = useState(false);
   const [statsReduit, setStatsReduit] = useState(false);
   const [donneeVentDeployee, setDonneeVentDeployee] = useState<"vent" | "ventDirection">("vent");
@@ -166,7 +190,7 @@ export default function NavigationVueClient({
   }, [cellulesMeteoState, pointActif]);
 
   return (
-    <div style={{ "--hauteur-graphique": `${paddingBas}px` } as React.CSSProperties}>
+    <div style={{ "--hauteur-graphique": `${paddingBas}px`, "--accent-nav": ACCENT_PAR_TYPE[type] ?? "var(--accent)" } as React.CSSProperties}>
       {/* Squiggle + breadcrumb + panneau stats */}
       <div className="trace-vue-stats-wrapper">
         {!statsReduit && (
@@ -202,13 +226,16 @@ export default function NavigationVueClient({
               autoFocus
             />
           ) : (
-            <h2
-              className="navigation-nom titre-editable"
-              onClick={() => setEnEditionNom(true)}
-              title="Cliquer pour renommer"
-            >
-              {nom}
-            </h2>
+            <div className="navigation-nom-ligne">
+              <h2
+                className="navigation-nom titre-editable"
+                onClick={() => setEnEditionNom(true)}
+                title="Cliquer pour renommer"
+              >
+                {nom}
+              </h2>
+              <span className="navigation-badge-type">{LABEL_TYPE[type] ?? type}</span>
+            </div>
           )}
           <div className="navigation-meta-details" style={statsReduit ? { display: "none" } : undefined}>
             <span
@@ -228,9 +255,9 @@ export default function NavigationVueClient({
             {bateau && (
               <div className="navigation-bateau">
                 <svg width="10" height="16" viewBox="0 0 12 22" fill="none" style={{ transform: "rotate(30deg)" }}>
-                  <path d="M6 0 Q12 8 11 16 L10 20 L2 20 L1 16 Q0 8 6 0 Z" fill="#F6BC00" stroke="white" strokeWidth="1" />
+                  <path d="M6 0 Q12 8 11 16 L10 20 L2 20 L1 16 Q0 8 6 0 Z" fill="var(--accent-nav)" stroke="white" strokeWidth="1" />
                 </svg>
-                <span style={{ color: "#F6BC00" }}>{bateau.nom}</span>
+                <span style={{ color: "var(--accent-nav)" }}>{bateau.nom}</span>
               </div>
             )}
             <button
@@ -255,6 +282,58 @@ export default function NavigationVueClient({
           onReduitChange={setStatsReduit}
         />
       </div>
+        <BarreOutils
+          toggle={
+            <div className="barre-outils-toggle">
+              <button
+                className={`barre-outils-toggle-btn${modeVue === "journal" ? " actif" : ""}`}
+                onClick={() => setModeVue("journal")}
+                title="Mode journal"
+              >
+                <BookOpen size={16} />
+              </button>
+              <button
+                className={`barre-outils-toggle-btn${modeVue === "perf" ? " actif" : ""}`}
+                onClick={() => setModeVue("perf")}
+                title="Mode performance"
+              >
+                <BarChart3 size={16} />
+              </button>
+            </div>
+          }
+          actions={[
+            {
+              id: "partager",
+              icone: <Share2 />,
+              label: "Partager cette navigation",
+              onClick: async () => {
+                try {
+                  const rep = await fetch(`/api/journal/navigations/${navigationId}/partage`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({}),
+                  });
+                  if (rep.ok) {
+                    const { shareToken } = await rep.json();
+                    if (shareToken) {
+                      const url = `${window.location.origin}/partage/${shareToken}`;
+                      await navigator.clipboard.writeText(url);
+                      alert("Lien copie !");
+                    }
+                  }
+                } catch {
+                  // silencieux
+                }
+              },
+            },
+            {
+              id: "editer",
+              icone: <Pencil />,
+              label: "Editer les metadonnees",
+              onClick: () => { /* TODO: popover edition meta */ },
+            },
+          ]}
+        />
       </div>
 
       {pointActif && (
@@ -271,7 +350,7 @@ export default function NavigationVueClient({
 
       <div className="trace-vue-carte">
         <TraceMapWrapper
-          points={points}
+          points={isZoomed ? pointsFiltres : points}
           maxSpeed={maxSpeed}
           paddingBottom={paddingBas}
           pointActifIndex={pointActifIndex}
@@ -331,24 +410,52 @@ export default function NavigationVueClient({
         </div>
       )}
 
-      {/* Graphique + timeline */}
+      {/* Zone C : graphique (perf) ou timeline (journal) */}
       <div className="trace-vue-graphique">
-        <GraphiqueRedimensionnable
-          hauteurInitiale={HAUTEUR_GRAPHIQUE_INITIALE}
-          hauteurMin={80}
-          hauteurMax={450}
-          onHauteurChange={handleHauteurChange}
-        >
-          <TraceChart
-            points={points}
-            donnee={donneeGraphee}
-            pointActifIndex={pointActifIndex}
-            pointFixeIndex={pointFixeIndex}
-            onHoverPoint={handleHoverPoint}
-            onClickPoint={handleClickPoint}
-            cellulesMeteo={cellulesMeteoState}
+        {modeVue === "perf" ? (
+          <GraphiqueRedimensionnable
+            hauteurInitiale={HAUTEUR_GRAPHIQUE_INITIALE}
+            hauteurMin={80}
+            hauteurMax={450}
+            onHauteurChange={handleHauteurChange}
+          >
+            <TraceChart
+              points={points}
+              donnee={donneeGraphee}
+              pointActifIndex={pointActifIndex}
+              pointFixeIndex={pointFixeIndex}
+              onHoverPoint={handleHoverPoint}
+              onClickPoint={handleClickPoint}
+              cellulesMeteo={cellulesMeteoState}
+              rangeDebut={debutZoom}
+              rangeFin={finZoom}
+              onRangeChange={setPlage}
+              onRangeReset={resetZoom}
+            />
+          </GraphiqueRedimensionnable>
+        ) : (
+          <TimelineJournal
+            navigationId={navigationId}
+            onClickEntree={(ts, lat, lon) => {
+              // Trouver le point le plus proche du timestamp
+              const tMs = new Date(ts).getTime();
+              let meilleur = points[0];
+              let meilleurDiff = Infinity;
+              for (const p of points) {
+                if (!p.timestamp) continue;
+                const diff = Math.abs(new Date(p.timestamp).getTime() - tMs);
+                if (diff < meilleurDiff) {
+                  meilleurDiff = diff;
+                  meilleur = p;
+                }
+              }
+              if (meilleur) handleClickPoint(meilleur.pointIndex);
+            }}
+            pointActifTimestamp={pointActif?.timestamp ?? null}
+            pointActifLat={pointActif?.lat ?? null}
+            pointActifLon={pointActif?.lon ?? null}
           />
-        </GraphiqueRedimensionnable>
+        )}
       </div>
 
     </div>

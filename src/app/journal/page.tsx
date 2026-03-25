@@ -18,9 +18,19 @@ export default async function PageJournalServeur() {
 
   let dossiers: ResumeDossier[] = [];
   let bateaux: ResumeBateau[] = [];
+  let portAttache: { lat: number | null; lon: number | null; nom: string | null } = { lat: null, lon: null, nom: null };
   let erreurBD = false;
 
   try {
+    // Charger le port d'attache de l'utilisateur
+    const userPrefs = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { portAttacheLat: true, portAttacheLon: true, portAttacheNom: true },
+    });
+    if (userPrefs) {
+      portAttache = { lat: userPrefs.portAttacheLat, lon: userPrefs.portAttacheLon, nom: userPrefs.portAttacheNom };
+    }
+
     const [resultDossiers, resultBateaux] = await Promise.all([
       prisma.dossier.findMany({
       where: { userId, parentId: null },
@@ -87,7 +97,7 @@ export default async function PageJournalServeur() {
           Impossible de charger les donnees. Veuillez rafraichir la page.
         </div>
       )}
-      <PageAccueil dossiers={dossiers} bateaux={bateaux} />
+      <PageAccueil dossiers={dossiers} bateaux={bateaux} portAttache={portAttache} />
     </>
   );
 }

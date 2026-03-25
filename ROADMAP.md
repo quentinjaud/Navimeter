@@ -114,24 +114,27 @@ User
 - [ ] Panneau stats enrichi : stats globales + point actif, switch donnee graphee au clic
 - [ ] Mode edition metadonnees (nom, date, type) depuis la vue navigation
 
-## Phase 3c — Zoom temporel (v0.4.x)
+## Phase 3c — Zoom temporel (v0.4.x) ✅
 
-- [ ] Curseurs de selection de plage temporelle sur le graphique (deux poignees draggables)
-- [ ] Filtrage de la trace carte : n'afficher que le segment correspondant a la plage selectionnee
-- [ ] Graphiques recharges sur la plage zoomee : echelle affinee, plus de precision sur les donnees (vitesse, cap, etc.)
-- [ ] Zoom carte automatique : recentrer/rezoom sur le segment visible
-- [ ] Affichage de la plage selectionnee (heure debut → heure fin, duree) dans le HUD
-- [ ] Reset rapide : double-clic ou bouton pour revenir a la trace complete
-- [ ] Interaction fluide : drag des curseurs avec apercu en temps reel sur carte et graphiques
+- [x] Curseurs de selection de plage temporelle sur le graphique (deux poignees draggables)
+- [x] Filtrage de la trace carte : n'afficher que le segment correspondant a la plage selectionnee
+- [x] Graphiques recharges sur la plage zoomee : echelle affinee
+- [x] Affichage de la plage selectionnee (heure debut → heure fin, duree) dans le HUD
+- [x] Reset rapide : double-clic ou bouton pour revenir a la trace complete
+- [x] Interaction fluide : drag des curseurs avec apercu en temps reel sur carte et graphiques
+- [ ] Zoom carte automatique : recentrer/rezoom sur le segment visible (fitBounds auto)
 
 ## Phase 3d — Entrees journal (v0.4.x)
 
-- [ ] Entrees journal : notes texte + photos geolocalisees
+- [x] Entrees journal : notes texte geolocalisees
+- [x] Toggle Journal/Perf dans la barre d'outils NavVue
+- [x] Timeline journal en zone C (bas) avec frise chronologique
+- [ ] Entrees journal : photos geolocalisees
 - [ ] Storage photos : Railway Storage Buckets (S3-compatible)
 
 ## Phase 4 — Performance mono-trace (v0.5)
 
-- [ ] Slider/toggle Journal ↔ Performance sur navigation solo
+- [x] ~~Slider/toggle Journal ↔ Performance sur navigation solo~~ (fait en Phase 3d)
 - [ ] Enrichissement vent :
   - **Priorité 1** : extensions GPX (instruments à bord — données précises)
   - **Priorité 2** : open-meteo-archive (résolution ~25km/1h — tendance OK, pas fiable pour régate côtière)
@@ -157,9 +160,9 @@ User
 - [x] Endpoint recalcul polylines manquantes
 
 ### A faire (polish accueil)
-- [ ] "Mon port d'attache" dans settings utilisateur (centrer la carte au demarrage)
-- [ ] Panneau Settings en panneau flottant (traces, bateaux, gestion dossiers en tableau)
-- [ ] Traces / Bateaux / Admin en panneaux flottants depuis le menu user (plus de pages separees)
+- [x] ~~"Mon port d'attache" dans settings utilisateur~~ (panneau preferences + clic carte + centrage)
+- [x] ~~Traces / Bateaux en panneaux flottants depuis le menu user~~ (PanneauContext + zone D droite)
+- [ ] Panneau Preferences (port d'attache, futures prefs)
 - [ ] Drag-and-drop de navs entre dossiers et dans les aventures
 
 ---
@@ -184,9 +187,10 @@ User
 
 ## Phase 7 — Partage & Export (v0.9)
 
-- [ ] Lien public par navigation (contrôle granulaire : journal, photos, stats, perf)
+- [x] Lien public par navigation (carte + stats + journal, read-only)
 - [ ] Lien public par dossier/aventure (groupe de navigations)
-- [ ] Vue publique read-only + vue aventure (carte récap + liste navs + journal)
+- [ ] Vue publique par dossier/aventure (carte recap + liste navs + journal)
+- [ ] Controle granulaire du partage (checkboxes : carte, stats, journal, graphique)
 - [ ] Export stats PDF + export image carte
 - [ ] Embed iframe
 
@@ -212,12 +216,12 @@ User
 
 ## Refactorings en attente
 
-- [ ] Extraire `creerStyleCarte` en module partage (`src/lib/geo/style-carte.ts`) — duplique entre TraceMap et CarteNettoyage
-- [ ] Constantes layer IDs MapLibre (`"osm"`, `"satellite"`, `"openseamap"`) — strings repetees dans TraceMap
-- [ ] Generaliser `TitreEditable` avec callback `onSave` — reutilisable pour trace et navigation
+- [x] ~~Extraire `creerStyleCarte` en module partage~~ → `src/lib/maps/style-carte.ts`
+- [x] ~~Constantes layer IDs MapLibre~~ → `src/lib/maps/layer-ids.ts`
+- [x] ~~Generaliser `TitreEditable` avec callback `onSave`~~ → prop optionnelle `onSave`
 - [ ] Extraire SVG marqueur bateau en composant (`MarqueurBateau.tsx`) — quand un second usage apparait
 - [ ] Timeline : cleanup listeners `mousemove`/`mouseup` sur unmount (guard `useRef`)
-- [ ] URLs humanisees : slug sur les navigations (`/navigation/solo-la-rochelle` au lieu de l'ID Prisma) — generer un slug unique a partir du nom, sans accents, tirets
+- [x] ~~URLs humanisees : slug sur les navigations~~ → `src/lib/slug.ts`, champ `slug` sur Navigation
 - [x] ~~Vue journal : navigateur dossiers/aventures/navs~~ → fait en v0.6 (ArborescenceJournal)
 
 ---
