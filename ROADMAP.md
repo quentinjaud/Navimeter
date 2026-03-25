@@ -178,10 +178,11 @@ User
 
 ## Phase 6 — Polaires & Parcours (v0.8)
 
-- [ ] Diagramme polaire (vitesse vs angle de vent)
-- [ ] Polaires théoriques : import manuel (fichier .pol / CSV) + éditeur intégré
+- [x] Diagramme polaire SVG interactif (zoom/pan, tooltip, courbes Catmull-Rom)
+- [x] Editeur de polaires integre : import/export .POL, edition tableau, comparaison avec 496 refs NavimetriX
+- [ ] Tester l'export .POL apres modification (valider que les donnees editees s'exportent correctement)
 - [ ] Import polaires depuis NavimetriX : reverse-engineer l'app Windows pour localiser les fichiers polaires (sur macOS : `~/Library/Application Support/Soft4Sail/NavimetriX/polars/`). NavimetriX prevoit un module polaires en T2 2026 — anticiper la compatibilite
-- [ ] Ratio performance réelle / polaire théorique
+- [ ] Ratio performance reelle / polaire theorique (interfacer traces GPS avec editeur polaires)
 - [ ] Création de parcours : placement de marques/bouées
 - [ ] Association parcours → navigation régate
 
