@@ -44,11 +44,9 @@ body {
 }
 
 .toolbar__back {
-  color: white;
-  text-decoration: none;
-  font-size: 1.4em;
-  line-height: 1;
-  opacity: 0.8;
+  display: flex;
+  line-height: 0;
+  opacity: 0.9;
   transition: opacity 0.15s;
 }
 .toolbar__back:hover { opacity: 1; }
@@ -110,6 +108,7 @@ body {
 .select-ref option {
   color: var(--text);
   background: white;
+  font-weight: 200;
 }
 .select-ref:focus {
   outline: 2px solid rgba(255,255,255,0.5);
