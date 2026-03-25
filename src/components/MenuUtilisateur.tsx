@@ -36,6 +36,9 @@ export function MenuUtilisateur() {
             <Settings size={14} style={{ marginRight: 6, verticalAlign: "middle" }} />
             Preferences
           </Menu.Item>
+          <Menu.Item component={Link} href="/polaires">
+            Polaires
+          </Menu.Item>
           {estAdmin && (
             <>
               <Menu.Divider />
